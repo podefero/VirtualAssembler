@@ -1,11 +1,11 @@
 CXX = g++
 CXXFLAGS = -std=c++14
 
-all: binary_converter
+all: main
 
-binary_converter: main.cpp binary_converter.cpp binary_converter.h
-	$(CXX) $(CXXFLAGS) -o binary_converter main.cpp binary_converter.cpp
+main: main.cpp binary_converter.cpp binary_converter.h
+	$(CXX) $(CXXFLAGS) -o main main.cpp binary_converter.cpp
 
 clean:
-	rm -f binary_converter
+	rm -f main
 
