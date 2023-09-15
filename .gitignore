@@ -17,16 +17,12 @@
 *.gch
 *.pch
 
-# Generated files
-Makefile
-makefile
-CMakeLists.txt
-
 # IDE specific files
 .vscode/
 .idea/
 
 # Dependency directories
 bin/
+build/
 lib/
 

@@ -1,38 +1,36 @@
+#include "binary_converter.h"
 #include <iostream>
 #include <string>
-#include <sstream>
 
-int main() {
-    std::cout << "Enter a positive, base-10 integer between 0 and 4294967295 (with no commas) and hit Enter/Return: ";
+std::string int_to_binary(int num) {
+  // Convert the integer to binary and output as a string
+  std::string binary;
+  while (num > 0) {
+    binary = std::to_string(num % 2) + binary;
+    num /= 2;
+  }
 
-    std::string input;
-    std::cin >> input;
+  return binary;
+}
+bool is_valid_input(std::string input) {
 
-    // Validate input
-    for (char c : input) {
-        if (!isdigit(c)) {
-            std::cerr << "Invalid input. Please enter a positive integer without commas." << std::endl;
-            return 1;
-        }
+  // Validate input
+  for (char c : input) {
+    if (!isdigit(c)) {
+      return false;
     }
+  }
 
-    // Convert the input string to an integer
-    unsigned int num;
-    std::istringstream iss(input);
-    if (!(iss >> num) || num < 0 || num > 4294967295) {
-        std::cerr << "Invalid input. Please enter a positive integer between 0 and 4294967295." << std::endl;
-        return 1;
-    }
-
-    // Convert the integer to binary and output as a string
-    std::string binary;
-    while (num > 0) {
-        binary = std::to_string(num % 2) + binary;
-        num /= 2;
-    }
-
-    std::cout << "Binary representation: " << binary << std::endl;
-
-    return 0;
+  return true;
 }
 
+int string_to_int(std::string input) {
+  int num;
+  try {
+    num = std::stoi(input);
+  } catch (const std::out_of_range &e) {
+    return -1;
+  }
+
+  return num;
+}
