@@ -1,3 +1,6 @@
+Switch to branch P0
+git checkout P0
+
 To build and run Google Tests run
 ./buildAndRunTest.sh
 
