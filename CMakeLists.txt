@@ -1,30 +1,15 @@
-cmake_minimum_required(VERSION 3.14)
-project(binary_converter)
+cmake_minimum_required(VERSION 3.12)
+project(virtualmachine)
 
-# GoogleTest requires at least C++14
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Set the C++ standard to C++17
+set(CMAKE_CXX_STANDARD 17)
 
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+# Add the source files to your project
+add_executable(main_prog src/main.cpp)
 
-enable_testing()
-add_executable(
-  binary_converter_tests
-  binary_converter_tests.cc
-  binary_converter.cpp
-)
-target_link_libraries( 
-  binary_converter_tests
-  GTest::gtest_main
-)
+# Include the mpark library
+target_include_directories(main_prog PRIVATE include)
 
-include(GoogleTest)
-gtest_discover_tests(binary_converter_tests)
+# Link the mpark library (assuming it's a header-only library)
+# You may not need to link anything if it's header-only.
 
