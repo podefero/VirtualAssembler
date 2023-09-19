@@ -12,4 +12,6 @@ target_include_directories(main_prog PRIVATE include)
 
 # Link the mpark library (assuming it's a header-only library)
 # You may not need to link anything if it's header-only.
+# Include the subdirectory for tests
+add_subdirectory(tests)
 

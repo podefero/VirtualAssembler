@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
-project(binary_converter)
+project(virtualmachine_tests)
 
 # GoogleTest requires at least C++14
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -16,15 +16,20 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 add_executable(
-  binary_converter_tests
-  binary_converter_tests.cc
-  binary_converter.cpp
+  main_tests
+  main_tests.cpp
 )
+
 target_link_libraries( 
-  binary_converter_tests
+  main_tests
   GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(binary_converter_tests)
+gtest_discover_tests(main_tests)
+
+add_custom_target(run_tests
+    COMMAND main_tests
+    DEPENDS main_tests
+)
 
