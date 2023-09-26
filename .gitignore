@@ -3,6 +3,7 @@
 *.ko
 *.obj
 *.elf
+*.bin
 
 # Compiled Dynamic libraries
 *.so
@@ -20,6 +21,7 @@
 # IDE specific files
 .vscode/
 .idea/
+compile_commands.json
 
 # Dependency directories
 bin/
