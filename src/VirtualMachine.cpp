@@ -40,9 +40,23 @@ void VirtualMachine::fetch() {
   }
 }
 
+void VirtualMachine::decode() {
+  Operation *operation;
+  operation = operationFactory.createOperation(current_instruction.opcode,
+                                               current_instruction.operand1,
+                                               current_instruction.operand2);
+  if (operation) {
+    operationQueue.push(operation);
+  }
+}
+
 // getters
 unsigned int VirtualMachine::getPc() { return program_counter; }
 
 Memory::Instruction VirtualMachine::getInstruction() {
   return current_instruction;
+}
+
+std::queue<Operation *> VirtualMachine::getOperationQueue() {
+  return operationQueue;
 }

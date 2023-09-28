@@ -99,3 +99,32 @@ TEST_F(VirtualMachineTest, FetchAndUpdate) {
   EXPECT_EQ(vm.getInstruction().operand2, expect.operand2);
   EXPECT_EQ(vm.getPc(), expect_pc);
 }
+
+TEST_F(VirtualMachineTest, FetchNDecode) {
+  // Test the decode, see if we can add the AddOperation
+  std::string filePath = "we.bin";
+  vm.loadMemory(filePath);
+
+  vm.initPc();
+
+  // set instruction and updated pc
+  vm.fetch();
+
+  vm.decode();
+
+  EXPECT_FALSE(vm.getOperationQueue().empty());
+}
+
+TEST_F(VirtualMachineTest, ValidateAddOpCode) {
+  // Test the add opcode
+  Registers registers;
+  registers.setRegister(0x01, 10);
+  registers.setRegister(0x02, 10);
+
+  // reg 0x01 should be 20 now
+  OperationAdd operation(0x01, 0x02);
+  int result = operation.execute(registers);
+  int reg_result = 20;
+  EXPECT_EQ(result, 1);
+  EXPECT_EQ(reg_result, registers.getRegister(0x01));
+}
