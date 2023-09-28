@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 file(GLOB SOURCES "src/*.cpp")
 
 # Add the source files to your project
-add_executable(main_prog ${SOURCES})
+add_executable(main_prog ${SOURCES} Main.cpp)
 
 # Include my header files
 target_include_directories(main_prog PRIVATE include)
