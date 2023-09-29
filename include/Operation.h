@@ -8,7 +8,7 @@ class Operation {
 public:
   virtual ~Operation() = default;
   virtual int validate(Memory &memory) = 0;
-  virtual int execute(Registers &registers) = 0;
+  virtual int execute(Memory &memory) = 0;
 
 protected:
   int operand1 = 0;

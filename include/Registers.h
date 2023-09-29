@@ -1,6 +1,6 @@
 #ifndef REGISTERS_H
 #define REGISTERS_H
-
+#include <iostream>
 class Registers {
 private:
   static const int NUM_REGISTERS = 16;

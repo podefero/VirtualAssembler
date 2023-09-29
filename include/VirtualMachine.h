@@ -4,7 +4,6 @@
 #include "Memory.h"
 #include "Operation.h"
 #include "OperationFactory.h"
-#include "Registers.h"
 #include <queue>
 #include <string>
 
@@ -16,16 +15,15 @@ public:
   Memory memory;
   int loadMemory(const std::string &filePath);
   void initPc();
-  void fetch();
-  void decode();
+  int fetch();
+  int decode();
+  int execute();
+  unsigned int findTrap0();
   std::queue<Operation *> getOperationQueue();
   Memory::Instruction getInstruction();
-  unsigned int getPc();
 
 private:
-  unsigned int program_counter = 0;
   Memory::Instruction current_instruction;
-  Registers registers;
   OperationFactory operationFactory;
   std::queue<Operation *> operationQueue;
 };

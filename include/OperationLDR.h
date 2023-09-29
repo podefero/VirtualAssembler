@@ -1,11 +1,11 @@
-#ifndef OPERATION_ADD_H
-#define OPERATION_ADD_H
+#ifndef OPERATION_LDR_H
+#define OPERATION_LDR_H
 
 #include "Operation.h"
 
-class OperationAdd : public Operation {
+class OperationLDR : public Operation {
 public:
-  OperationAdd(int op1, int op2);
+  OperationLDR(int op1, int op2);
 
   int validate(Memory &memory) override;
   int execute(Memory &memory) override;

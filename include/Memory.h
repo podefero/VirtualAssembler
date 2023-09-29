@@ -1,6 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include "Registers.h"
 #include <fstream>
 #include <string>
 
@@ -16,9 +17,15 @@ public:
     int operand2;
   };
   Instruction readInstruction(unsigned int offset);
+  unsigned int pc = 0;
+  unsigned int code_seg_start = 0;
+  unsigned int code_seg_end = 0;
+  unsigned int data_seg_start = 0x04;
+  unsigned int data_seg_end = 0;
+  static const int size = 80; // 1MB
+  Registers registers;
 
 private:
-  static const int size = 80; // 1MB
   unsigned char memory[size];
 };
 

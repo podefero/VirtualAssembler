@@ -40,6 +40,7 @@ unsigned char Memory::readByte(unsigned int offset) {
         std::to_string(offset));
   } else {
     // read in 1 byte starting with offset.
+    // std::cout << static_cast<int>(memory[offset]) << "Byte value";
     result = memory[offset];
   }
   return result;

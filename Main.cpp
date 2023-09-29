@@ -12,11 +12,12 @@ int main(int argc, char *argv[]) {
   try {
     VirtualMachine vm;
     int result = vm.loadMemory(filePath);
-
+    vm.initPc();
     if (result == 1) {
       std::cout << "Memory loaded successfully." << std::endl;
       std::cout << vm.memory.readInt(0) << " PC " << std::endl;
       std::cout << sizeof(int) << " sizeof int" << std::endl;
+      std::cout << vm.findTrap0() << std::endl;
       // std::cout << size_t(int) << " size_t int" << std::endl;
 
     } else {
