@@ -1,5 +1,6 @@
 #include "OperationTrap3.h"
 #include "TrapException.h"
+#include <iostream>
 OperationTrap3::OperationTrap3(int op1, int op2) {
   operand1 = op1;
   operand2 = op2;

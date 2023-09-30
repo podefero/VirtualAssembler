@@ -11,14 +11,22 @@ int main(int argc, char *argv[]) {
 
   try {
     VirtualMachine vm;
+    // Initialize. Need to make a init func that handles this
     int result = vm.loadMemory(filePath);
-    vm.initPc();
+
     if (result == 1) {
-      std::cout << "Memory loaded successfully." << std::endl;
-      std::cout << vm.memory.readInt(0) << " PC " << std::endl;
-      std::cout << sizeof(int) << " sizeof int" << std::endl;
-      std::cout << vm.findTrap0() << std::endl;
-      // std::cout << size_t(int) << " size_t int" << std::endl;
+      vm.initPc();
+      int memory_size = vm.findTrap0();
+      // if we find no trap then exit;
+      if (memory_size == 1)
+        return 1;
+      // std::cout << memory_size << std::endl;
+      while (memory_size > vm.memory.pc) {
+        vm.fetch();
+        vm.decode();
+      }
+
+      vm.execute();
 
     } else {
       std::cerr << "Failed to load memory." << std::endl;

@@ -16,6 +16,7 @@ int OperationAdd::execute(Memory &memory) {
     rd += rs;
     memory.registers.setRegister(operand1, rd);
   } catch (const std::out_of_range &ex) {
+    std::cerr << ex.what();
     return -1;
   }
   return 1;

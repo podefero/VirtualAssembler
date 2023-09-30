@@ -1,4 +1,5 @@
 #include "MemoryException.h"
+#include "TrapException.h"
 #include "VirtualMachine.h"
 #include <gtest/gtest.h>
 #include <string>
@@ -132,13 +133,13 @@ TEST_F(VirtualMachineTest, FetchNDecode) {
   vm.loadMemory(filePath);
 
   vm.initPc();
-
+  vm.findTrap0();
   // set instruction and updated pc
   vm.fetch();
 
   vm.decode();
 
-  EXPECT_FALSE(vm.getOperationQueue().empty());
+  EXPECT_FALSE(vm.operationQueue.empty());
 }
 
 // Opcode tests
@@ -316,9 +317,91 @@ TEST_F(VirtualMachineTest, ValidateLDBOpCode) {
   // should be 1 byte outside of data after reading the int
 }
 
-// Tests for trap operation at to test the execute in Virtual Machine
-TEST_F(VirtualMachineTest, ValidateFetchDecodeExcuteFlow) {
-  // Test the fetch decode excute for virtual machine
-  // Want to test two valid instructions by validating them and then executing
-  // them
+// Tests trap operation
+TEST_F(VirtualMachineTest, ValidateTrap0) {
+  // Test TRAP0 by catching exception and comparing result
+  Memory memory;
+  OperationTrap0 trap(0, 0);
+  EXPECT_THROW(trap.execute(memory), TrapException);
+}
+
+TEST_F(VirtualMachineTest, ValidateTrap1) {
+  // validate trap1 prints a number
+  Memory memory;
+  int value = 12;
+  memory.registers.setRegister(3, value);
+  OperationTrap1 trap(1, 0);
+
+  int result = trap.execute(memory);
+  EXPECT_EQ(result, 1);
+}
+
+TEST_F(VirtualMachineTest, ValidateTrap3) {
+  // validate trap3 prints a characcter
+  Memory memory;
+  int value = 0x47; // G
+  OperationTrap3 trap(3, 0);
+  memory.registers.setRegister(3, value);
+
+  int result = trap.execute(memory);
+  EXPECT_EQ(result, 3);
+}
+
+TEST_F(VirtualMachineTest, ValidOperationFactory) {
+  // Test if factory can create an operation
+  Operation *operation;
+  OperationFactory factory;
+
+  Memory memory;
+
+  memory.registers.setRegister(0, 10);
+  memory.registers.setRegister(1, 5);
+
+  operation = factory.createOperation(15, 0, 1);
+  int result = operation->execute(memory);
+  int reg_result = memory.registers.getRegister(0);
+
+  EXPECT_EQ(result, 1);
+  EXPECT_EQ(reg_result, 5);
+}
+
+// Test execution flow
+TEST_F(VirtualMachineTest, ValidExecutionFLow) {
+  // Test ADD, TRAP1, TRAP0
+  OperationFactory factory;
+  VirtualMachine vm;
+  // set registers
+  vm.memory.registers.setRegister(3, 10);
+  vm.memory.registers.setRegister(1, 10);
+  int add_result = 20;
+  // opcode, op1, op2
+  // add
+  vm.operationQueue.push(factory.createOperation(13, 3, 1));
+  // trap1
+  vm.operationQueue.push(factory.createOperation(21, 1, 0));
+  // trap 0;
+  vm.operationQueue.push(factory.createOperation(21, 0, 0));
+
+  int exec_result = vm.execute();
+  EXPECT_EQ(exec_result, 1);
+  EXPECT_EQ(add_result, vm.memory.registers.getRegister(3));
+}
+
+TEST_F(VirtualMachineTest, InvalidExecutionFLow) {
+  // Test ADD, TRAP1, TRAP0. Add will have a bad register.
+  OperationFactory factory;
+  VirtualMachine vm;
+  // set registers
+  vm.memory.registers.setRegister(3, 10);
+  vm.memory.registers.setRegister(1, 10);
+  // opcode, op1, op2
+  // add
+  vm.operationQueue.push(factory.createOperation(13, 31, 1));
+  // trap1
+  vm.operationQueue.push(factory.createOperation(21, 1, 0));
+  // trap 0;
+  vm.operationQueue.push(factory.createOperation(21, 0, 0));
+
+  int exec_result = vm.execute();
+  EXPECT_EQ(exec_result, -1);
 }

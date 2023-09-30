@@ -34,7 +34,7 @@ public:
       return new OperationMul(op1, op2);
     case 17:
       return new OperationDiv(op1, op2);
-    case 22:
+    case 21:
       if (op1 == 0)
         return new OperationTrap0(op1, op2);
       if (op1 == 1)

@@ -66,6 +66,13 @@ int VirtualMachine::decode() {
       return -1;
     }
     operationQueue.push(operation);
+  } else { // operation is null
+    std::cerr << "Null operation at offset "
+              << memory.pc - sizeof(Memory::Instruction)
+              << " Opcode: " << current_instruction.opcode
+              << " op1: " << current_instruction.operand1
+              << " op2: " << current_instruction.operand2 << std::endl;
+    return -1;
   }
   delete operation;
   return 1;
@@ -73,22 +80,31 @@ int VirtualMachine::decode() {
 
 // execute all operations, catch trap execeptions and handle those
 int VirtualMachine::execute() {
-  Operation *operation;
   int result = 0;
+  Operation *operation;
   while (!operationQueue.empty()) {
-    operation = operationQueue.front();
+
     try {
-      result = operation->execute(memory);
+
+      operation = operationQueue.front();
+
+      if (operation) {
+        result = operation->execute(memory);
+
+      } else {
+        std::cerr << "Operation failed " << std::endl;
+      }
       if (result == -1) {
-        std::cerr << "Operation failed" << std::endl;
         return -1;
       }
+      std::cout << "check1" << std::endl;
+      operationQueue.pop();
+
     } catch (const TrapException &ex) {
-      if (result == 0) {
-        // exit gracefully
-        std::cerr << "Successful exit" << std::endl;
-        return 1;
-      }
+      // result from trap 0
+      // exit gracefully
+      std::cerr << "Successful exit" << std::endl;
+      return 1;
     }
   }
   return 0;
@@ -120,8 +136,4 @@ unsigned int VirtualMachine::findTrap0() {
 
 Memory::Instruction VirtualMachine::getInstruction() {
   return current_instruction;
-}
-
-std::queue<Operation *> VirtualMachine::getOperationQueue() {
-  return operationQueue;
 }

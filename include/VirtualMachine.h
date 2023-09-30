@@ -19,13 +19,12 @@ public:
   int decode();
   int execute();
   unsigned int findTrap0();
-  std::queue<Operation *> getOperationQueue();
+  std::queue<Operation *> operationQueue;
   Memory::Instruction getInstruction();
 
 private:
   Memory::Instruction current_instruction;
   OperationFactory operationFactory;
-  std::queue<Operation *> operationQueue;
 };
 
 #endif
