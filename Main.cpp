@@ -22,11 +22,18 @@ int main(int argc, char *argv[]) {
         return 1;
       // std::cout << memory_size << std::endl;
       while (memory_size > vm.memory.pc) {
-        vm.fetch();
-        vm.decode();
-      }
 
-      vm.execute();
+        if (vm.fetch() != 1)
+          std::cerr << "failed to fetch";
+        if (vm.decode() != 1)
+          std::cerr << "failed to decode";
+        int result = vm.execute();
+        if (result == 2)
+          std::cout << std::endl << "Successful exit" << std::endl;
+        else if (result != 1) {
+          std::cout << "Execute failed " << std::endl;
+        }
+      }
 
     } else {
       std::cerr << "Failed to load memory." << std::endl;

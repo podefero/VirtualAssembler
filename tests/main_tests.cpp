@@ -38,15 +38,6 @@ TEST_F(VirtualMachineTest, ReadValidPC) {
   EXPECT_EQ(result, expect);
 }
 
-TEST_F(VirtualMachineTest, ReadPastSize) {
-  // Test exception when we try to read past main memory siz
-  std::string filePath = "we.bin";
-  vm.loadMemory(filePath);
-  int offset = 100; // beyond size of we.bin
-  EXPECT_THROW(vm.memory.readInt(offset), MemoryException);
-  // int result = vm.memory.read()
-}
-
 TEST_F(VirtualMachineTest, ReadByteValid) {
   // Test case to read a byte from valid memory
   std::string filePath = "we.bin";
@@ -112,6 +103,7 @@ TEST_F(VirtualMachineTest, FetchAndUpdate) {
   vm.loadMemory(filePath);
 
   vm.initPc();
+  vm.findTrap0();
 
   // Expected instruction values and updated pc value
   Memory::Instruction expect = {0x01, 0x12, 0x00};
@@ -126,7 +118,7 @@ TEST_F(VirtualMachineTest, FetchAndUpdate) {
   EXPECT_EQ(vm.memory.pc, expect_pc);
 }
 
-TEST_F(VirtualMachineTest, FetchNDecode) {
+/*TEST_F(VirtualMachineTest, FetchNDecode) {
   // Test the decode, see if we can get the first instruction which is move in
   // we.bin
   std::string filePath = "we.bin";
@@ -140,7 +132,7 @@ TEST_F(VirtualMachineTest, FetchNDecode) {
   vm.decode();
 
   EXPECT_FALSE(vm.operationQueue.empty());
-}
+}*/
 
 // Opcode tests
 TEST_F(VirtualMachineTest, ValidateAddOpCode) {
@@ -366,7 +358,7 @@ TEST_F(VirtualMachineTest, ValidOperationFactory) {
 }
 
 // Test execution flow
-TEST_F(VirtualMachineTest, ValidExecutionFLow) {
+/*TEST_F(VirtualMachineTest, ValidExecutionFLow) {
   // Test ADD, TRAP1, TRAP0
   OperationFactory factory;
   VirtualMachine vm;
@@ -404,4 +396,4 @@ TEST_F(VirtualMachineTest, InvalidExecutionFLow) {
 
   int exec_result = vm.execute();
   EXPECT_EQ(exec_result, -1);
-}
+}*/

@@ -37,6 +37,10 @@ void VirtualMachine::initPc() {
 
 // fetch an instruction and set the instruction value and upate pc
 int VirtualMachine::fetch() {
+  if (memory.pc < memory.code_seg_start || memory.pc > memory.code_seg_end) {
+    std::cerr << "PC out of range " << std::endl;
+    return -1;
+  }
   try {
     current_instruction = memory.readInstruction(memory.pc);
     memory.pc += sizeof(Memory::Instruction);
@@ -49,7 +53,6 @@ int VirtualMachine::fetch() {
 
 // decode instruction to get operation, then validate it
 int VirtualMachine::decode() {
-  Operation *operation;
   operation = operationFactory.createOperation(current_instruction.opcode,
                                                current_instruction.operand1,
                                                current_instruction.operand2);
@@ -65,7 +68,6 @@ int VirtualMachine::decode() {
       std::cerr << ex.what();
       return -1;
     }
-    operationQueue.push(operation);
   } else { // operation is null
     std::cerr << "Null operation at offset "
               << memory.pc - sizeof(Memory::Instruction)
@@ -74,40 +76,30 @@ int VirtualMachine::decode() {
               << " op2: " << current_instruction.operand2 << std::endl;
     return -1;
   }
-  delete operation;
   return 1;
 }
 
 // execute all operations, catch trap execeptions and handle those
 int VirtualMachine::execute() {
   int result = 0;
-  Operation *operation;
-  while (!operationQueue.empty()) {
+  try {
+    if (operation) {
+      result = operation->execute(memory);
 
-    try {
-
-      operation = operationQueue.front();
-
-      if (operation) {
-        result = operation->execute(memory);
-
-      } else {
-        std::cerr << "Operation failed " << std::endl;
-      }
-      if (result == -1) {
-        return -1;
-      }
-      std::cout << "check1" << std::endl;
-      operationQueue.pop();
-
-    } catch (const TrapException &ex) {
-      // result from trap 0
-      // exit gracefully
-      std::cerr << "Successful exit" << std::endl;
-      return 1;
+    } else {
+      std::cerr << "Operation failed " << std::endl;
     }
+    if (result == -1) {
+      return -1;
+    }
+    delete operation;
+  } catch (const TrapException &ex) {
+    // result from trap 0
+    // exit gracefully
+    return 2;
   }
-  return 0;
+
+  return 1;
 }
 
 // find trap 0 so we can defince the code_segment space

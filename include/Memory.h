@@ -22,7 +22,7 @@ public:
   unsigned int code_seg_end = 0;
   unsigned int data_seg_start = 0x04;
   unsigned int data_seg_end = 0;
-  static const int size = 80; // 1MB
+  static const int size = 1000000; // 1MB
   Registers registers;
 
 private:
