@@ -102,7 +102,7 @@ int VirtualMachine::execute() {
   return 1;
 }
 
-// find trap 0 so we can defince the code_segment space
+// find trap 0 so we can define the code_segment space
 unsigned int VirtualMachine::findTrap0() {
   unsigned int offset = memory.pc;
   Memory::Instruction trap0 = {21, 0, 0};
@@ -112,7 +112,7 @@ unsigned int VirtualMachine::findTrap0() {
     try {
       instruct = memory.readInstruction(offset);
     } catch (const MemoryException &ex) {
-      std::cerr << "No trap0" << ex.what();
+      std::cerr << "No trap0 -> " << ex.what();
       return 1;
     }
     offset += sizeof(Memory::Instruction);
