@@ -1,10 +1,13 @@
-To build and run Google Tests run
-./buildAndRunTest.sh
+To build tests and main program run:
+./build.sh
 
-To build project run
-./buildProject.sh
+This will create a build folder which contains output file for main program named main_prog in build/
+and a output file for test in build/tests named tests
 
-Then run
-./main
+To run main_prog run these commands:
+cd build
+./main_prog <filePath>
 
-The project logic is in binary_converter.cpp the dirver is main.cpp.
+To run tests (assuming you are in build folder)
+cd tests
+./tests
