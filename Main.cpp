@@ -2,12 +2,19 @@
 #include <iostream>
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
+  std::string filePath = "";
+
+  if(argc == 1) {
+    //fixed path
+    filePath = "../tests/HelloWorld.bin";
+  }
+  else if (argc == 2) {
+    filePath = argv[1];
+  } else {
     std::cerr << "Usage: " << argv[0] << " <file_path>" << std::endl;
     return 1;
   }
 
-  std::string filePath = argv[1];
 
   try {
     VirtualMachine vm;
@@ -17,12 +24,26 @@ int main(int argc, char *argv[]) {
     if (result == 1) {
       vm.initPc();
       int memory_size = vm.findTrap0();
-      // if we find no trap then exit;
-      if (memory_size == 1)
+      // if we can't validate code segment then exit;
+      if (memory_size == 1) 
         return 1;
       // std::cout << memory_size << std::endl;
-      while (memory_size > vm.memory.pc) {
 
+      //validate opcodes by fetch and decode, the second pass we will execute.
+      while (memory_size > vm.memory.pc) {
+        if (vm.fetch() != 1){
+          std::cerr << "failed to fetch";
+          return 1;
+        }
+        if (vm.decode() != 1) {
+          std::cerr << "failed to decode";
+          return 1;
+        }
+      }
+
+      vm.initPc(); //reset pc
+      //execution process. second pass.
+      while (memory_size > vm.memory.pc) {
         if (vm.fetch() != 1)
           std::cerr << "failed to fetch";
         if (vm.decode() != 1)
