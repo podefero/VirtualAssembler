@@ -2,8 +2,8 @@
 #include "TrapException.h"
 #include "VirtualMachine.h"
 #include <gtest/gtest.h>
+#include <iostream>
 #include <string>
-
 // Define a fixture for your tests if needed.
 class VirtualMachineTest : public ::testing::Test {
 protected:
@@ -324,18 +324,38 @@ TEST_F(VirtualMachineTest, ValidateTrap1) {
   memory.registers.setRegister(3, value);
   OperationTrap1 trap(1, 0);
 
+  // Redirect cout to a stringstream
+  std::stringstream output;
+  std::streambuf *oldCout = std::cout.rdbuf(output.rdbuf());
+
   int result = trap.execute(memory);
+
+  // Restore cout
+  std::cout.rdbuf(oldCout);
+
+  // Check if the expected character 'G' is printed
+  EXPECT_EQ(output.str(), std::to_string(value));
   EXPECT_EQ(result, 1);
 }
 
 TEST_F(VirtualMachineTest, ValidateTrap3) {
-  // validate trap3 prints a characcter
+  // validate trap3 prints a character
   Memory memory;
   int value = 0x47; // G
   OperationTrap3 trap(3, 0);
   memory.registers.setRegister(3, value);
 
+  // Redirect cout to a stringstream
+  std::stringstream output;
+  std::streambuf *oldCout = std::cout.rdbuf(output.rdbuf());
+
   int result = trap.execute(memory);
+
+  // Restore cout
+  std::cout.rdbuf(oldCout);
+
+  // Check if the expected character 'G' is printed
+  EXPECT_EQ(output.str(), "G");
   EXPECT_EQ(result, 3);
 }
 
