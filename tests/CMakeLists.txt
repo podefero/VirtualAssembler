@@ -16,7 +16,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 #file(GLOB SOURCES "../src/*.cpp")
-add_executable(tests main_tests.cpp ${SOURCES})
+add_executable(tests vm_tests.cpp asm_tests.cpp ${SOURCES})
 
 target_include_directories(tests PRIVATE ../include)
 

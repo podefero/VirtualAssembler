@@ -20,4 +20,4 @@ make
 
 # Move the test file
 cp ../tests/we.bin tests
-
+cp ../tests/we.asm tests
