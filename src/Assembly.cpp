@@ -43,6 +43,13 @@ Token *Assembly::readToken(std::string &line) {
   // split line into array
   std::vector<std::string> split;
 
+  // before spliting remove commas and  extra white space
+  std::regex commaRegex(",");
+  std::regex spaceRegex("\\s+");
+
+  line = std::regex_replace(line, commaRegex, " ");
+  line = std::regex_replace(line, spaceRegex, " ");
+
   std::stringstream ss(line);
   std::string item;
 
@@ -52,12 +59,13 @@ Token *Assembly::readToken(std::string &line) {
 
   // add items to the split array
   while (std::getline(ss, item, ' ')) {
-    std::cout << item << std::endl;
+    // std::cout << item << std::endl;
 
     // set token type
     if (getTokenType(item) != "NONE") {
       tokenType = getTokenType(item);
-    } else {
+    }
+    if (tokenType == "NONE") {
       index++;
     }
 
@@ -74,30 +82,37 @@ Token *Assembly::readToken(std::string &line) {
   unsigned int size = split.size();
 
   // Make sure the tokens are in right positions
-  if (size == 1) {
-    return createToken(tokenType, "", "");
-  } else if (size == 2) {
-    // we could have a label on the left, or a value on the right
-    if (index == 0) // value on right
-      return createToken(tokenType, split[index + 1], "");
-    if (index == 1) // label on left
-      return createToken(tokenType, "", "");
-  } else if (size == 3) {
-    // if label is on left then we have one value
-    // else we have two values
-    if (index == 0) // no label, just values
-      return createToken(tokenType, split[index + 1], split[index + 2]);
-    if (index == 1) // we have a label, so one value
-      return createToken(tokenType, split[index + 1], "");
-  } else if (size == 4) {
-    // we have a label, op1, and op2. Assuming they are in order
-    if (index == 1) // still check token position
-      return createToken(tokenType, split[index + 1], split[index + 2]);
-  } else {
+  if (size == 0 || size > 4) {
     // invalid token size
     throw(PassOneException("Invalid number of tokens: " + std::to_string(size) +
-                           " should be between 1-4 in line " + line));
+                           ".. Should be between 1-4 in line " + line));
     return nullptr;
+  }
+
+  // the createToken will check if instruction has the required operand
+  try {
+    if (size == 1) {
+      return createToken(tokenType, "", "");
+    } else if (size == 2) {
+      // we could have a label on the left, or a value on the right
+      if (index == 0) // value on right
+        return createToken(tokenType, split[index + 1], "");
+      if (index == 1) // label on left
+        return createToken(tokenType, "", "");
+    } else if (size == 3) {
+      // if label is on left then we have one value
+      // else we have two values
+      if (index == 0) // no label, just values
+        return createToken(tokenType, split[index + 1], split[index + 2]);
+      if (index == 1) // we have a label, so one value
+        return createToken(tokenType, split[index + 1], "");
+    } else if (size == 4) {
+      // we have a label, op1, and op2. Assuming they are in order
+      if (index == 1) // still check token position
+        return createToken(tokenType, split[index + 1], split[index + 2]);
+    }
+  } catch (const PassOneException &ex) {
+    throw(PassOneException(std::string(ex.what()) + " at line " + line));
   }
 
   // if we get to hear then our tokens were not ordered right
@@ -110,19 +125,29 @@ Token *Assembly::readToken(std::string &line) {
 // create token. value can be op1 for instructions
 Token *Assembly::createToken(std::string tokenType, std::string value,
                              std::string op2) {
-  if (tokenType == "BYTE") {
+  if (tokenType == "BYT") {
     offset += sizeof(unsigned char);
+    // strip '' to make it easer to access
+    std::regex singleRegex("'");
+    value = std::regex_replace(value, singleRegex, "");
+
     return new TokenByte(offset, value[0]);
+  } else if (tokenType == "INST") {
+    offset += 12; // size of instruction
+    if (value == "") {
+      throw(PassOneException("operand 1 is empty or missing. op1: " + value));
+    }
   } else {
-    return nullptr;
+    throw(PassOneException("Don't have supported token " + tokenType));
   }
+  return nullptr;
 }
 
 // Checks if the item passed in can match a directive or instruction
 std::string Assembly::getTokenType(std::string &item) {
   std::string instruction = "INST";
   if (item == ".BYT") {
-    return "BYTE";
+    return "BYT";
   } else if (item == ".INT") {
     return "INT";
   } else if (item == ".STR") {

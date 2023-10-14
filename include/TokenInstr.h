@@ -4,14 +4,15 @@
 #include "Token.h"
 #include <vector>
 
-class TokenByte : public Token {
+class TokenInstr : public Token {
 public:
-  TokenByte(unsigned int offset, unsigned char value);
+  TokenInstr(unsigned int offset, unsigned char value);
   void validate(unsigned int &offset) override;
   std::vector<unsigned char> getBytes() override;
 
 private:
-  unsigned char value;
+  unsigned int op1;
+  unsigned int op2;
 };
 
 #endif

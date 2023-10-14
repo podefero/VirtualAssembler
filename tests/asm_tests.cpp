@@ -88,9 +88,80 @@ TEST(AssemblyTest, ReadAndStrip) {
   }
 }*/
 
-TEST(AssemblyTest, ValidReadToken) {
-  // Test if we can read a valid token
+TEST(AssemblyTest, ValidReadTokenMultiSpace) {
+  // Test if we can read a valid token that have tabs and spaces between
   Assembly assembly;
-  std::string token_string = "W .BYT 'W'";
-  Token *token = assembly.readToken(token_string);
+  std::string token_string = "W     .BYT      'W'";
+  EXPECT_NO_THROW(assembly.readToken(token_string));
+}
+
+TEST(AssemblyTest, ValidReadTokenMultiSpaceAndCommas) {
+  // Test if we can read a valid token that have spaces and commas
+  Assembly assembly;
+  std::string token_string = "ADD R1,     R2";
+  EXPECT_NO_THROW(assembly.readToken(token_string));
+}
+
+TEST(AssemblyTest, InvalidReadTokenOperand1) {
+  // Missing operand 1
+  Assembly assembly;
+  std::string token_string = "ADD ";
+  EXPECT_THROW(assembly.readToken(token_string), PassOneException);
+}
+
+TEST(AssemblyTest, ValidTokenByte) {
+  // test a valid tokey byte
+  Assembly assembly;
+  unsigned int expect_offset = 5;
+  unsigned char expect_char = 'K';
+
+  std::string line = "K .BYT 'K'";
+  Token *token = assembly.readToken(line);
+
+  EXPECT_EQ(expect_offset, token->offset);
+  EXPECT_EQ(expect_char, token->getBytes()[0]);
+}
+
+TEST(AssemblyTest, ValidTokenByteNoValue) {
+  // test a valid tokey byte
+  Assembly assembly;
+  unsigned int expect_offset = 5;
+  unsigned char expect_char = '\0';
+
+  std::string line = "K .BYT";
+  Token *token = assembly.readToken(line);
+
+  EXPECT_EQ(expect_offset, token->offset);
+  EXPECT_EQ(expect_char, token->getBytes()[0]);
+}
+
+TEST(AssemblyTest, ValidTokenByteNoLabel) {
+  // test a valid tokey byte
+  Assembly assembly;
+  unsigned int expect_offset = 5;
+  unsigned char expect_char = 'K';
+
+  std::string line = ".BYT K";
+  Token *token = assembly.readToken(line);
+
+  EXPECT_EQ(expect_offset, token->offset);
+  EXPECT_EQ(expect_char, token->getBytes()[0]);
+}
+
+TEST(AssemblyTest, InvalidTokenByte) {
+  // test a valid tokey byte
+  Assembly assembly;
+
+  std::string line = "K.BYT 'K'";
+  EXPECT_THROW(assembly.readToken(line), PassOneException);
+}
+
+TEST(AssemblyTest, ValidOffset) {
+  // after reading a valid token updated offset
+  Assembly assembly;
+  unsigned int expect = 5;
+  std::string line = "K .BYT 'K'";
+  // readinging in .byt so offset should be 5.
+  assembly.readToken(line);
+  EXPECT_EQ(expect, assembly.offset);
 }

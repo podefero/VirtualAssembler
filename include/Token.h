@@ -8,6 +8,7 @@ public:
   virtual ~Token() = default;
   virtual void validate(unsigned int &offset){};
   virtual std::vector<unsigned char> getBytes() { return {}; };
+  unsigned int offset = 0;
 };
 
 #endif

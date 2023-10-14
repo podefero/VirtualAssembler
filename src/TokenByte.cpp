@@ -9,6 +9,6 @@ void TokenByte::validate(unsigned int &offset) {}
 
 std::vector<unsigned char> TokenByte::getBytes() {
   std::vector<unsigned char> bytes;
-  bytes[0] = value;
+  bytes.push_back(value);
   return bytes;
 }
