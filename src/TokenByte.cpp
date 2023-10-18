@@ -5,7 +5,7 @@ TokenByte::TokenByte(unsigned int offset, unsigned char value) {
   this->value = value;
 }
 
-void TokenByte::validate(unsigned int &offset) {}
+void TokenByte::validate(std::map<std::string, unsigned int> &symbol_table) {}
 
 std::vector<unsigned char> TokenByte::getBytes() {
   std::vector<unsigned char> bytes;

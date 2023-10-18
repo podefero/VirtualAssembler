@@ -3,7 +3,6 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-using namespace std;
 
 Assembly::Assembly() {}
 
@@ -23,18 +22,34 @@ void Assembly::readFile(const std::string &filePath) {
   }
 }
 
+// Reads in file, strips comments, reads tokens and builds symbol_table
+void Assembly::passOne(const std::string &filePath) {
+  try {
+    readFile(filePath);
+    stripComments();
+    for (size_t i = 0; i < file_buffer.size(); i++) {
+      // read in line, if empty skip. Else tokenize
+      std::string line = file_buffer[i];
+      if (line.empty())
+        continue;
+
+      // tokenize
+      // readToken function will build symbol_table
+      Token *token = readToken(line);
+      if (token) {
+        tokens.push_back(token);
+        delete token;
+      }
+    }
+  } catch (const PassOneException &ex) {
+    throw PassOneException(std::string(ex.what()));
+  }
+}
+
 void Assembly::stripComments() {
-  // first strip remove all ; but keep lines that have mix
-  // of code and comments
-  std::regex commentRegex("(^;.*)");
+  std::regex commentRegex("(^;.*)|( ;.*)");
   for (std::string &line : file_buffer) {
     line = std::regex_replace(line, commentRegex, "");
-  }
-
-  // remove comments part of a line of code
-  std::regex commentRegex2("( ;.*)");
-  for (std::string &line : file_buffer) {
-    line = std::regex_replace(line, commentRegex2, "");
   }
 }
 
@@ -53,29 +68,11 @@ Token *Assembly::readToken(std::string &line) {
   std::stringstream ss(line);
   std::string item;
 
-  // when we push each item to the split we check if we have a valid token
-  unsigned int index = 0;
-  std::string tokenType = "NONE";
-
   // add items to the split array
   while (std::getline(ss, item, ' ')) {
     // std::cout << item << std::endl;
 
-    // set token type
-    if (getTokenType(item) != "NONE") {
-      tokenType = getTokenType(item);
-    }
-    if (tokenType == "NONE") {
-      index++;
-    }
-
     split.push_back(item);
-  }
-
-  // if we didn't get a valid token after checking each item on the line
-  if (tokenType == "NONE") {
-    throw(PassOneException("No valid token found at " + line));
-    return nullptr;
   }
 
   // based on size we can determine if we have label andor value/operands
@@ -91,70 +88,86 @@ Token *Assembly::readToken(std::string &line) {
 
   // the createToken will check if instruction has the required operand
   try {
-    if (size == 1) {
-      return createToken(tokenType, "", "");
-    } else if (size == 2) {
-      // we could have a label on the left, or a value on the right
-      if (index == 0) // value on right
-        return createToken(tokenType, split[index + 1], "");
-      if (index == 1) // label on left
-        return createToken(tokenType, "", "");
-    } else if (size == 3) {
-      // if label is on left then we have one value
-      // else we have two values
-      if (index == 0) // no label, just values
-        return createToken(tokenType, split[index + 1], split[index + 2]);
-      if (index == 1) // we have a label, so one value
-        return createToken(tokenType, split[index + 1], "");
-    } else if (size == 4) {
-      // we have a label, op1, and op2. Assuming they are in order
-      if (index == 1) // still check token position
-        return createToken(tokenType, split[index + 1], split[index + 2]);
+    // if index = 1 then we have a label on left to put in symbol table.
+    for (unsigned int index = 0; index < 2; index++) {
+      Token *token;
+      std::string tokenType = split[index];
+      if (size == 1) {
+        token = createToken(tokenType, "", "");
+      } else if (size == 2) {
+        // we could have a label on the left, or a value on the right
+        if (index == 0) {
+          token = createToken(tokenType, split[index + 1], "");
+        }
+        if (index == 1) // label on left
+          token = createToken(tokenType, "", "");
+      } else if (size == 3) {
+        // if label is on left then we have one value
+        // else we have two values
+        if (index == 0) // no label, just values
+          token = createToken(tokenType, split[index + 1], split[index + 2]);
+        if (index == 1) // we have a label, so one value
+          token = createToken(tokenType, split[index + 1], "");
+      } else if (size == 4) {
+        if (index == 0)
+          token = nullptr;
+        // we have a label, op1, and op2. Assuming they are in order
+        if (index == 1) // still check token position
+          token = createToken(tokenType, split[index + 1], split[index + 2]);
+      }
+      if (token != nullptr) {
+        // add symbol to table
+        if (index == 1) {
+          if (symbol_table.count(split[0]) == 0)
+            symbol_table.emplace(split[0], offset);
+          else
+            throw PassOneException("Symbol: " + split[0] +
+                                   " already exist in table. line " + line);
+        }
+        return token;
+      }
     }
-  } catch (const PassOneException &ex) {
+  } // Failed to create token, catch and wrap into a new throw
+  catch (const PassOneException &ex) {
     throw(PassOneException(std::string(ex.what()) + " at line " + line));
   }
 
-  // if we get to hear then our tokens were not ordered right
-  throw(PassOneException("Tokens out of order " + tokenType +
-                         " was in potition " + std::to_string(index) +
-                         " in line " + line));
+  // if we get to here then our tokens were not ordered right
+  throw(PassOneException("Tokens out of order or invalid " + line));
   return nullptr;
 }
 
 // create token. value can be op1 for instructions
-Token *Assembly::createToken(std::string tokenType, std::string value,
-                             std::string op2) {
-  if (tokenType == "BYT") {
-    offset += sizeof(unsigned char);
-    // strip '' to make it easer to access
-    std::regex singleRegex("'");
-    value = std::regex_replace(value, singleRegex, "");
-
-    return new TokenByte(offset, value[0]);
-  } else if (tokenType == "INST") {
-    offset += 12; // size of instruction
-    if (value == "") {
-      throw(PassOneException("operand 1 is empty or missing. op1: " + value));
-    }
-  } else {
-    throw(PassOneException("Don't have supported token " + tokenType));
-  }
-  return nullptr;
-}
-
-// Checks if the item passed in can match a directive or instruction
-std::string Assembly::getTokenType(std::string &item) {
-  std::string instruction = "INST";
+Token *Assembly::createToken(const std::string item, const std::string value,
+                             const std::string op2) {
   if (item == ".BYT") {
-    return "BYT";
-  } else if (item == ".INT") {
-    return "INT";
+    offset += 1;
+    if (op2.size() != 0)
+      throw(
+          PassOneException("Invalid .BYTE, should not have second parameter "));
+    // size for a valid char in assembly, 'W'
+    else if (value.size() == 3)
+      return new TokenByte(offset, value[1]);
+    else if (value.size() == 0) {
+      return new TokenByte(offset, '\0');
+    } else
+      throw(PassOneException("Invalid .BYTE value: " + value));
+  } /*else if (item == ".INT") {
+    return nullptr;
   } else if (item == ".STR") {
-    return "STR";
-  } else if (item == "ADD") {
-    return instruction;
-  } else if (item == "DIV") {
+    return nullptr;
+  }*/
+  else if (item == "ADD") {
+    offset += 12;
+    // check if op1 and op2 are valid registers
+    int rd = getValidRegister(value);
+    int rs = getValidRegister(op2);
+    if (rd == -1 || rs == -1) {
+      throw(
+          PassOneException("Invalid register(s) RD: " + value + " RS: " + op2));
+    } else
+      return new TokenAdd(offset, rd, rs);
+  } /* else if (item == "DIV") {
     return instruction;
   } else if (item == "MUL") {
     return instruction;
@@ -170,9 +183,34 @@ std::string Assembly::getTokenType(std::string &item) {
     return instruction;
   } else if (item == "TRP") {
     return instruction;
-  } else {
-    return "NONE";
-  }
+  }*/
+
+  return nullptr;
 }
 
-std::vector<std::string> Assembly::getBuffer() { return file_buffer; }
+// if it's a valid register return register number
+int Assembly::getValidRegister(const std::string &item) {
+  if (item.size() == 2) {
+    if (item[0] == 'R') {
+      int registerNumber = std::stoi(item.substr(1));
+      // check if in register range 0-15
+      if (registerNumber >= 0 && registerNumber <= 15) {
+        return static_cast<unsigned int>(registerNumber);
+      }
+    }
+  }
+
+  return -1;
+}
+
+// access value from symbol table
+unsigned int Assembly::getSymbol(const std::string key) {
+  try {
+    return symbol_table.at(key);
+  } catch (const std::out_of_range &e) {
+    throw PassOneException("Key: " + key + " not found in the symbol table");
+    return 0;
+  }
+}
+const std::vector<std::string> &Assembly::getBuffer() { return file_buffer; }
+std::vector<Token *> Assembly::getTokens() { return tokens; }

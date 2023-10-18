@@ -109,19 +109,6 @@ TEST(AssemblyTest, InvalidReadTokenOperand1) {
   EXPECT_THROW(assembly.readToken(token_string), PassOneException);
 }
 
-TEST(AssemblyTest, ValidTokenByte) {
-  // test a valid tokey byte
-  Assembly assembly;
-  unsigned int expect_offset = 5;
-  unsigned char expect_char = 'K';
-
-  std::string line = "K .BYT 'K'";
-  Token *token = assembly.readToken(line);
-
-  EXPECT_EQ(expect_offset, token->offset);
-  EXPECT_EQ(expect_char, token->getBytes()[0]);
-}
-
 TEST(AssemblyTest, ValidTokenByteNoValue) {
   // test a valid tokey byte
   Assembly assembly;
@@ -136,12 +123,12 @@ TEST(AssemblyTest, ValidTokenByteNoValue) {
 }
 
 TEST(AssemblyTest, ValidTokenByteNoLabel) {
-  // test a valid tokey byte
+  // test a valid token byte
   Assembly assembly;
   unsigned int expect_offset = 5;
   unsigned char expect_char = 'K';
 
-  std::string line = ".BYT K";
+  std::string line = ".BYT 'K'";
   Token *token = assembly.readToken(line);
 
   EXPECT_EQ(expect_offset, token->offset);
@@ -149,11 +136,53 @@ TEST(AssemblyTest, ValidTokenByteNoLabel) {
 }
 
 TEST(AssemblyTest, InvalidTokenByte) {
-  // test a valid tokey byte
+  // test a invalid token
   Assembly assembly;
 
   std::string line = "K.BYT 'K'";
   EXPECT_THROW(assembly.readToken(line), PassOneException);
+}
+
+TEST(AssemblyTest, InvalidTokenByteValue) {
+  // test a valid token but invalid value
+  Assembly assembly;
+
+  std::string line = "K .BYT K"; // missing '' around K
+  EXPECT_THROW(assembly.readToken(line), PassOneException);
+}
+
+TEST(AssemblyTest, InvalidTokenByteSize) {
+  // test token size too large
+  Assembly assembly;
+
+  std::string line = "K .BYT 'K' p";
+  EXPECT_THROW(assembly.readToken(line), PassOneException);
+}
+
+TEST(AssemblyTest, InvalidTokenSize) {
+  // test token size too large
+  Assembly assembly;
+
+  std::string line = "K .BYT 'K' p t";
+  EXPECT_THROW(assembly.readToken(line), PassOneException);
+}
+
+TEST(AssemblyTest, ValidTokenInstruct) {
+  // Test instruction has the right bytes
+  Assembly assembly;
+  unsigned int expect_offset = 16;
+  unsigned char bytes[] = {13, 0, 0, 0, 3, 0, 0, 0, 6, 0, 0, 0};
+
+  std::string line = "ADD R3 R6";
+  Token *token = assembly.readToken(line);
+  EXPECT_EQ(expect_offset, token->offset);
+
+  std::vector<unsigned char> tokenBytes = token->getBytes();
+  EXPECT_EQ(sizeof(bytes), tokenBytes.size());
+
+  for (size_t i = 0; i < tokenBytes.size(); i++) {
+    EXPECT_EQ(bytes[i], tokenBytes[i]);
+  }
 }
 
 TEST(AssemblyTest, ValidOffset) {
@@ -164,4 +193,82 @@ TEST(AssemblyTest, ValidOffset) {
   // readinging in .byt so offset should be 5.
   assembly.readToken(line);
   EXPECT_EQ(expect, assembly.offset);
+}
+
+TEST(AssemblyTest, ValidOffset2) {
+  // after reading a valid token updated offset.
+  // using two tokens
+  Assembly assembly;
+  unsigned int expect = 17;
+  std::string line = "K .BYT 'K'";
+  std::string line2 = "ADD R1 R2";
+  // readinging in .byt so offset should be 5.
+  assembly.readToken(line);
+  assembly.readToken(line2);
+  EXPECT_EQ(expect, assembly.offset);
+}
+
+TEST(AssemblyTest, ValidSymbolTable) {
+  // build symbol table
+  Assembly assembly;
+
+  std::string line = "K .BYT 'K'";
+  std::string line2 = "MAIN ADD R1 R2";
+  // should have K at offset 5
+  // MAIN at 17
+  assembly.readToken(line);
+  assembly.readToken(line2);
+
+  unsigned int result1 = assembly.getSymbol("K");
+  unsigned int result2 = assembly.getSymbol("MAIN");
+
+  EXPECT_EQ(5, result1);
+  EXPECT_EQ(17, result2);
+}
+
+TEST(AssemblyTest, InvalidSameSymbol) {
+  // invalid symbol table. same symbol twice
+  Assembly assembly;
+
+  std::string line = "MAIN .BYT 'K'";
+  std::string line2 = "MAIN ADD R1 R2";
+  assembly.readToken(line);
+
+  EXPECT_THROW(assembly.readToken(line2), PassOneException);
+}
+
+TEST(AssemblyTest, InvalidMissingSymbol) {
+  // get a missing symbol
+  Assembly assembly;
+
+  std::string line = ".BYT 'K'";
+  assembly.readToken(line);
+
+  EXPECT_THROW(assembly.getSymbol("K"), PassOneException);
+}
+
+TEST(AssemblyTest, ValidPassOne) {
+  Assembly assembly;
+
+  // Create a temporary file path
+  std::string filePath = "temp_file.txt";
+
+  // Create a file stream for writing
+  std::ofstream outputFile(filePath);
+
+  if (outputFile.is_open()) {
+    std::string fileContents = std::string(";This is a comment\n") +
+                               std::string("K .BYT 'K'\n") + std::string("\n") +
+                               std::string("ADD R1 R2\n");
+    outputFile << fileContents;
+    outputFile.close();
+  } else {
+    FAIL() << "Failed to open the file for writing";
+  }
+  // tokens should be size 2
+  // we should have one symbol K at offset 5
+
+  EXPECT_NO_THROW(assembly.passOne(filePath));
+  EXPECT_EQ(2, assembly.getTokens().size());
+  EXPECT_EQ(5, assembly.getSymbol("K"));
 }

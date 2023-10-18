@@ -7,7 +7,7 @@
 class TokenByte : public Token {
 public:
   TokenByte(unsigned int offset, unsigned char value);
-  void validate(unsigned int &offset) override;
+  void validate(std::map<std::string, unsigned int> &symbol_table) override;
   std::vector<unsigned char> getBytes() override;
 
 private:
