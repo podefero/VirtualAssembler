@@ -16,6 +16,7 @@ public:
 
   void readFile(const std::string &filePath);
   void passOne(const std::string &filePath);
+  void passTwo();
   void stripComments();
   const std::vector<std::string> &getBuffer();
   Token *readToken(std::string &line);
@@ -25,10 +26,14 @@ public:
   unsigned int getSymbol(const std::string key);
   std::vector<Token *> getTokens();
   unsigned int offset = 4; // pc is 4 bytes
+  unsigned int data_seg_end;
+  std::vector<unsigned char> bin_file;
+
 private:
   std::vector<std::string> file_buffer;
   std::vector<Token *> tokens;
   std::map<std::string, unsigned int> symbol_table;
+  bool done_instruction = false;
 };
 
 #endif

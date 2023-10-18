@@ -1,5 +1,6 @@
 #include "Assembly.h"
 #include "PassOneException.h"
+#include "PassTwoException.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -38,11 +39,48 @@ void Assembly::passOne(const std::string &filePath) {
       Token *token = readToken(line);
       if (token) {
         tokens.push_back(token);
-        delete token;
       }
     }
   } catch (const PassOneException &ex) {
     throw PassOneException(std::string(ex.what()));
+  }
+}
+
+// build binary file from symbol table and tokens
+void Assembly::passTwo() {
+  for (size_t i = 0; i < tokens.size(); i++) {
+    // validate
+    try {
+      tokens[i]->validate(symbol_table);
+    } catch (const PassTwoException &ex) {
+      throw PassTwoException(std::string(ex.what()) + " at index " +
+                             std::to_string(i) + " in tokens");
+      return;
+    }
+
+    // write to file
+    for (size_t j = 0; j < tokens[i]->getBytes().size(); j++) {
+      bin_file.push_back(tokens[i]->getBytes()[j]);
+    }
+
+    // finished with token
+    delete tokens[i];
+  }
+
+  // write file
+  //  Open the file in binary mode for writing
+  std::ofstream file("output.bin", std::ios::binary);
+
+  // Check if the file was successfully opened
+  if (file.is_open()) {
+    // Write the contents of the vector to the file
+    file.write(reinterpret_cast<const char *>(bin_file.data()),
+               bin_file.size());
+
+    // Close the file
+    file.close();
+  } else {
+    throw(PassTwoException("Failed to write bin file"));
   }
 }
 
@@ -140,16 +178,18 @@ Token *Assembly::readToken(std::string &line) {
 // create token. value can be op1 for instructions
 Token *Assembly::createToken(const std::string item, const std::string value,
                              const std::string op2) {
-  if (item == ".BYT") {
+  unsigned int instr_size = 12;
+  Token *token = nullptr;
+  if (item == ".BYT" && !done_instruction) {
     offset += 1;
     if (op2.size() != 0)
       throw(
           PassOneException("Invalid .BYTE, should not have second parameter "));
     // size for a valid char in assembly, 'W'
     else if (value.size() == 3)
-      return new TokenByte(offset, value[1]);
+      token = new TokenByte(offset, value[1]);
     else if (value.size() == 0) {
-      return new TokenByte(offset, '\0');
+      token = new TokenByte(offset, '\0');
     } else
       throw(PassOneException("Invalid .BYTE value: " + value));
   } /*else if (item == ".INT") {
@@ -158,7 +198,7 @@ Token *Assembly::createToken(const std::string item, const std::string value,
     return nullptr;
   }*/
   else if (item == "ADD") {
-    offset += 12;
+    offset += instr_size;
     // check if op1 and op2 are valid registers
     int rd = getValidRegister(value);
     int rs = getValidRegister(op2);
@@ -166,7 +206,7 @@ Token *Assembly::createToken(const std::string item, const std::string value,
       throw(
           PassOneException("Invalid register(s) RD: " + value + " RS: " + op2));
     } else
-      return new TokenAdd(offset, rd, rs);
+      token = new TokenAdd(offset, rd, rs);
   } /* else if (item == "DIV") {
     return instruction;
   } else if (item == "MUL") {
@@ -185,7 +225,28 @@ Token *Assembly::createToken(const std::string item, const std::string value,
     return instruction;
   }*/
 
-  return nullptr;
+  // if we have a valid token and if it's not a directive
+  // then set the done_instruction flag
+  // and set code_seg.
+  if (token && item != ".BYT" && item != ".STR" && item != ".INT") {
+    if (!done_instruction) { // so it only sets once
+      done_instruction = true;
+      data_seg_end = (offset - instr_size);
+      // write this to binary file
+      bin_file.push_back(static_cast<unsigned char>(data_seg_end & 0xFF));
+      bin_file.push_back(
+          static_cast<unsigned char>((data_seg_end >> 8) & 0xFF));
+      bin_file.push_back(
+          static_cast<unsigned char>((data_seg_end >> 16) & 0xFF));
+      bin_file.push_back(
+          static_cast<unsigned char>((data_seg_end >> 24) & 0xFF));
+    }
+  }
+  if (token && (item == ".BYTE" || item == ".STR" || item == ".INT")) {
+    throw PassOneException("Can't use Directive: " + item +
+                           " past data segment");
+  }
+  return token;
 }
 
 // if it's a valid register return register number

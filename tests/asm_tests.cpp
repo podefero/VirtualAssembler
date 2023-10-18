@@ -247,6 +247,37 @@ TEST(AssemblyTest, InvalidMissingSymbol) {
   EXPECT_THROW(assembly.getSymbol("K"), PassOneException);
 }
 
+TEST(AssemblyTest, ValidDataSeg) {
+  // check valid data segment
+  Assembly assembly;
+
+  std::string line = "K .BYT 'K'";  // 5
+  std::string line2 = "T .BYT 'T'"; // 6
+  std::string line3 = "ADD R2 R3";
+
+  assembly.readToken(line);
+  assembly.readToken(line2);
+  assembly.readToken(line3);
+
+  EXPECT_EQ(6, assembly.data_seg_end);
+}
+
+TEST(AssemblyTest, inValidDataSeg) {
+  // check invalid data segment
+  Assembly assembly;
+
+  std::string line = "K .BYT 'K'";  // 5
+  std::string line2 = "T .BYT 'T'"; // 6
+  std::string line3 = "ADD R2 R3";  // 18
+  std::string line4 = "L .BYT 'L'"; // 19 should throw here
+
+  assembly.readToken(line);
+  assembly.readToken(line2);
+  assembly.readToken(line3);
+
+  EXPECT_THROW(assembly.readToken(line4), PassOneException);
+}
+
 TEST(AssemblyTest, ValidPassOne) {
   Assembly assembly;
 
@@ -271,4 +302,30 @@ TEST(AssemblyTest, ValidPassOne) {
   EXPECT_NO_THROW(assembly.passOne(filePath));
   EXPECT_EQ(2, assembly.getTokens().size());
   EXPECT_EQ(5, assembly.getSymbol("K"));
+}
+
+TEST(AssemblyTest, ValidPassTwo) {
+  Assembly assembly;
+
+  // Create a temporary file path
+  std::string filePath = "temp_file.txt";
+
+  // Create a file stream for writing
+  std::ofstream outputFile(filePath);
+
+  if (outputFile.is_open()) {
+    std::string fileContents = std::string(";This is a comment\n") +
+                               std::string("K .BYT 'K'\n") + std::string("\n") +
+                               std::string("ADD R1 R2\n");
+    outputFile << fileContents;
+    outputFile.close();
+  } else {
+    FAIL() << "Failed to open the file for writing";
+  }
+  // total file size 17 bytes
+
+  // build tokens and table
+  EXPECT_NO_THROW(assembly.passOne(filePath));
+  EXPECT_NO_THROW(assembly.passTwo());
+  EXPECT_EQ(17, assembly.bin_file.size());
 }
