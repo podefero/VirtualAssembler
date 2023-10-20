@@ -376,3 +376,120 @@ TEST_F(VirtualMachineTest, ValidOperationFactory) {
   EXPECT_EQ(result, 1);
   EXPECT_EQ(reg_result, 5);
 }
+
+TEST_F(VirtualMachineTest, ValidWriteByte) {
+  Memory memory;
+  memory.writeByte(3, 'K');
+  memory.writeInt(4, 0x0000004B);
+  unsigned char result = memory.readByte(3);
+  unsigned char result2 = memory.readByte(4);
+  EXPECT_EQ(result, 'K');
+  EXPECT_EQ(result2, 'K');
+}
+
+TEST_F(VirtualMachineTest, ValidSTB) {
+  Memory memory;
+  memory.data_seg_start = 4;
+  memory.data_seg_end = 4;
+  memory.registers.setRegister(1, 0xFFFFFF4B);
+  OperationSTB op(1, 4);
+  op.validate(memory);
+  op.execute(memory);
+  // memory.writeByte(3, 'K');
+  unsigned char result = memory.readByte(4);
+  EXPECT_EQ(result, 'K');
+}
+
+TEST_F(VirtualMachineTest, InvalidSTB) {
+  Memory memory;
+  memory.data_seg_start = 4;
+  memory.data_seg_end = 4;
+  memory.registers.setRegister(1, 0x0000004B);
+  OperationSTB stb(1, 3);  // before data seg
+  OperationSTB stb2(1, 5); // after data seg
+  EXPECT_THROW(stb.validate(memory), MemoryException);
+  EXPECT_THROW(stb2.validate(memory), MemoryException);
+}
+
+TEST_F(VirtualMachineTest, ValidSTR) {
+  Memory memory;
+  memory.data_seg_start = 4;
+  memory.data_seg_end = 7;
+  memory.registers.setRegister(1, 0x00000009);
+  OperationSTR op(1, 4);
+  op.validate(memory);
+  op.execute(memory);
+  unsigned int result = memory.readByte(4);
+  EXPECT_EQ(result, 9);
+}
+
+TEST_F(VirtualMachineTest, WriteInt) {
+  Memory memory;
+  memory.writeInt(3, 0x09);
+  int result = memory.readInt(3);
+  EXPECT_EQ(result, 9);
+}
+TEST_F(VirtualMachineTest, WriteIntruction) {
+  Memory memory;
+  Memory::Instruction instruction = {10, 1, 2};
+  memory.writeInstruction(3, instruction);
+  Memory::Instruction result = memory.readInstruction(3);
+  EXPECT_EQ(result.opcode, instruction.opcode);
+  EXPECT_EQ(result.operand1, instruction.operand1);
+  EXPECT_EQ(result.operand2, instruction.operand2);
+}
+
+TEST_F(VirtualMachineTest, ValidateTrap4) {
+  Memory memory;
+  OperationTrap4 trap4(0, 0);
+
+  std::istringstream input("3"); // Set the input value to be "3"
+
+  // Redirect std::cin to read from the input stream
+  std::streambuf *oldCin = std::cin.rdbuf(input.rdbuf());
+
+  trap4.execute(memory);
+
+  // Restore std::cin
+  std::cin.rdbuf(oldCin);
+
+  OperationTrap1 trap1(0, 0);
+
+  std::stringstream output;
+  std::streambuf *oldCout = std::cout.rdbuf(output.rdbuf());
+
+  int result = trap1.execute(memory);
+
+  // Restore std::cout
+  std::cout.rdbuf(oldCout);
+
+  // Check if the expected output is "3"
+  EXPECT_EQ(output.str(), "3");
+}
+
+TEST_F(VirtualMachineTest, ValidateTrap2) {
+  Memory memory;
+  OperationTrap2 trap2(0, 0);
+
+  std::istringstream input("G");
+  // Redirect std::cin to read from the input stream
+  std::streambuf *oldCin = std::cin.rdbuf(input.rdbuf());
+
+  trap2.execute(memory);
+
+  // Restore std::cin
+  std::cin.rdbuf(oldCin);
+
+  OperationTrap3 trap3(0, 0);
+
+  std::stringstream output;
+  std::streambuf *oldCout = std::cout.rdbuf(output.rdbuf());
+
+  int result = trap3.execute(memory);
+
+  // Restore cout
+  std::cout.rdbuf(oldCout);
+
+  // Check if the expected character 'G' is printed
+  EXPECT_EQ(output.str(), "G");
+}

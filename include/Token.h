@@ -12,6 +12,7 @@ public:
                         unsigned int &limit){};
 
   virtual std::vector<unsigned char> getBytes() { return {}; };
+  std::string label;
 };
 
 #endif

@@ -80,7 +80,8 @@ void Assembly::passTwo() {
     } catch (const std::out_of_range &e) {
       throw PassTwoException(
           "Key not found in the symbol table during pass two " +
-          std::string(e.what()));
+          toHex(tokens[i]->getBytes()) + " index:" + std::to_string(i) +
+          " symbol: " + tokens[i]->label);
       return;
     }
 
@@ -214,20 +215,14 @@ Token *Assembly::createToken(const std::string item, const std::string value,
 
   // Check each token and see if we can match a valid one
   if (item == ".BYT" && !done_instruction) {
+
+    //.BYT
     offset += 1;
-
-    // if we have a second param throw.
-    if (op2.size() != 0)
-      throw(
-          PassOneException("Invalid .BYTE, should not have second parameter "));
-
-    // size for a valid char in assembly, 'W'
-    else if (value.size() == 3)
-      token = new TokenByte(value[1]);
-    else if (value.size() == 0) {
-      token = new TokenByte('\0');
+    if (value.size() > 0) {
+      token = new TokenByte(getImmediate(value));
     } else
-      throw(PassOneException("Invalid .BYTE value: " + value));
+      token = new TokenByte('\0');
+
   } else if (item == ".INT") {
 
     //.INT
@@ -282,56 +277,48 @@ Token *Assembly::createToken(const std::string item, const std::string value,
   } else if (item == "JMP") {
 
     // JMP
-    TokenJmp *token_jmp;
     offset += instr_size;
-    token_jmp = new TokenJmp(0, 0);
-    token_jmp->label = value;
-    token = token_jmp;
+    token = new TokenJmp(0, 0);
+    token->label = value;
 
   } else if (item == "STR") {
 
     // STR
     // Use TokenStr ptr to handle setting the label variable
-    TokenStr *token_str;
     offset += instr_size;
     int rs = getValidRegister(value);
-    token_str = new TokenStr(rs, 0);
-    token_str->label = op2;
-    token = token_str;
+    token = new TokenStr(rs, 0);
+    token->label = op2;
 
   } else if (item == "LDR") {
 
     // LDR
-    TokenLdr *token_ldr;
     offset += instr_size;
     int rd = getValidRegister(value);
-    token_ldr = new TokenLdr(rd, 0);
-    token_ldr->label = op2;
-    token = token_ldr;
+    token = new TokenLdr(rd, 0);
+    token->label = op2;
 
   } else if (item == "STB") {
 
     // STB
-    TokenStb *token_stb;
     offset += instr_size;
     int rs = getValidRegister(value);
-    token_stb = new TokenStb(rs, 0);
-    token_stb->label = op2;
-    token = token_stb;
+    token = new TokenStb(rs, 0);
+    token->label = op2;
 
   } else if (item == "LDB") {
 
     // LDB
-    TokenLdb *token_ldb;
     offset += instr_size;
     int rd = getValidRegister(value);
-    token_ldb = new TokenLdb(rd, 0);
-    token_ldb->label = op2;
-    token = token_ldb;
+    token = new TokenLdb(rd, 0);
+    token->label = op2;
 
   } else if (item == "TRP") {
-    // get the immediate value
-    // based on that value return the right trap
+
+    // TRP
+    //  get the immediate value
+    //  based on that value return the right trap
     int immediate = getImmediate(value);
     // trap 0
     if (immediate == 0) {
@@ -390,6 +377,7 @@ int Assembly::getValidRegister(const std::string &item) {
 
 // get immediate value
 // support # or 0x
+// support ''
 int Assembly::getImmediate(const std::string &item) {
   try {
     if (item[0] == '#') {
@@ -402,6 +390,12 @@ int Assembly::getImmediate(const std::string &item) {
         return -2147483648;
       int value = std::stoi(item.substr(2), nullptr, 16);
       return value;
+    } else if (item[0] == '\'' && item[2] == '\'' && item.length() == 3) {
+      // check if it's a valid unsigned char
+      return static_cast<unsigned char>(item[1]);
+    } else {
+      throw PassOneException("getImmediate() failed to get value from item: " +
+                             item);
     }
 
   } catch (const std::out_of_range &e) {

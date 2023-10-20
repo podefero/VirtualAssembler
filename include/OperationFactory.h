@@ -14,7 +14,9 @@
 #include "OperationSub.h"
 #include "OperationTrap0.h"
 #include "OperationTrap1.h"
+#include "OperationTrap2.h"
 #include "OperationTrap3.h"
+#include "OperationTrap4.h"
 
 class OperationFactory {
 public:
@@ -45,8 +47,12 @@ public:
         return new OperationTrap0(op1, op2);
       if (op1 == 1)
         return new OperationTrap1(op1, op2);
+      if (op1 == 2)
+        return new OperationTrap2(op1, op2);
       if (op1 == 3)
         return new OperationTrap3(op1, op2);
+      if (op1 == 4)
+        return new OperationTrap4(op1, op2);
     default:
       // Return a default operation or throw an exception for unrecognized
       // opcodes

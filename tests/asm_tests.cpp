@@ -124,14 +124,6 @@ TEST(AssemblyTest, InvalidTokenByteValue) {
   EXPECT_THROW(assembly.readToken(line), PassOneException);
 }
 
-TEST(AssemblyTest, InvalidTokenByteSize) {
-  // test token size too large
-  Assembly assembly;
-
-  std::string line = "K .BYT 'K' p";
-  EXPECT_THROW(assembly.readToken(line), PassOneException);
-}
-
 TEST(AssemblyTest, InvalidTokenSize) {
   // test token size too large
   Assembly assembly;
@@ -269,15 +261,20 @@ TEST(AssemblyTest, ValidImmediateValue) {
   std::string min_value_hex = "0x80000000";
   std::string max_value_hex = "0x7FFFFFFF";
 
+  std::string char_value = "'K'"; // 0x4B
+  int char_expect = 0x4B;
+
   int min_result = assembly.getImmediate(min_value);
   int max_result = assembly.getImmediate(max_value);
   int min_value_hex_result = assembly.getImmediate(min_value_hex);
   int max_value_hex_result = assembly.getImmediate(max_value_hex);
+  int char_result = assembly.getImmediate(char_value);
 
   EXPECT_EQ(min_expect, min_result);
   EXPECT_EQ(max_expect, max_result);
   EXPECT_EQ(min_expect, min_value_hex_result);
   EXPECT_EQ(max_expect, max_value_hex_result);
+  EXPECT_EQ(char_expect, char_result);
 }
 
 TEST(AssemblyTest, InvalidImmediateValue) {
@@ -384,7 +381,7 @@ TEST(AssemblyTest, ValidPassTwo) {
 
   if (outputFile.is_open()) {
     std::string fileContents =
-        std::string(";This is a comment\n") + std::string("K .BYT 'K'\n") +
+        std::string(";This is a comment\n") + std::string("K .BYT 0x4B\n") +
         std::string("TWO .INT 0x02\n") + std::string("\n") +
         std::string("THREE .INT 0x03\n") + std::string(".BYT\n") +
         std::string("JMP MAIN\n") + std::string("MAIN ADD R1 R2\n") +

@@ -21,8 +21,11 @@ int OperationSTR::validate(Memory &memory) {
 
 int OperationSTR::execute(Memory &memory) {
   try {
-    // int directive
-    int rs = memory.registers.getRegister(operand1);
+    // get regValue
+    unsigned int rs = memory.registers.getRegister(operand1);
+    unsigned int offset = operand2;
+    // write rs to label
+    memory.writeInt(offset, rs);
   } catch (const std::out_of_range &ex) {
     return -1;
   } catch (const MemoryException &ex) {
