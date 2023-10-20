@@ -9,6 +9,8 @@
 #include "OperationLDR.h"
 #include "OperationMove.h"
 #include "OperationMul.h"
+#include "OperationSTB.h"
+#include "OperationSTR.h"
 #include "OperationSub.h"
 #include "OperationTrap0.h"
 #include "OperationTrap1.h"
@@ -22,8 +24,12 @@ public:
       return new OperationJump(op1, op2);
     case 7:
       return new OperationMove(op1, op2);
+    case 9:
+      return new OperationSTR(op1, op2);
     case 10:
       return new OperationLDR(op1, op2);
+    case 11:
+      return new OperationSTB(op1, op2);
     case 12:
       return new OperationLDB(op1, op2);
     case 13:

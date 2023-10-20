@@ -59,3 +59,39 @@ Memory::Instruction Memory::readInstruction(unsigned int offset) {
   }
   return instruction;
 }
+void Memory::writeInt(unsigned int offset, unsigned int value) {
+  if (offset + sizeof(unsigned int) > size) {
+    throw MemoryException("Can't write int, beyond memory size. Offset: " +
+                          std::to_string(offset));
+  } else {
+    // write 4 bytes starting with offset
+    for (int i = 0; i < sizeof(unsigned int); ++i) {
+      memory[offset + i] = value & 0xFF;
+      value >>= 8;
+    }
+  }
+}
+
+void Memory::writeByte(unsigned int offset, unsigned char value) {
+  if (offset + sizeof(unsigned char) > size) {
+    throw MemoryException(
+        "Can't write unsigned char beyond memory size. Offset :" +
+        std::to_string(offset));
+  } else {
+    // write 1 byte starting with offset
+    memory[offset] = value;
+  }
+}
+
+void Memory::writeInstruction(unsigned int offset, Instruction instruction) {
+  if (offset + sizeof(Instruction) > size) {
+    throw MemoryException(
+        "Can't write instruction beyond memory size. Offset :" +
+        std::to_string(offset));
+  } else {
+    // write instruction (12 bytes)
+    writeInt(offset, instruction.opcode);
+    writeInt(offset + sizeof(int), instruction.operand1);
+    writeInt(offset + sizeof(int) * 2, instruction.operand2);
+  }
+}

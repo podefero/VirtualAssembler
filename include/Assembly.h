@@ -37,9 +37,10 @@ public:
   int getImmediate(const std::string &item);
   unsigned int getSymbol(const std::string key);
   std::vector<Token *> getTokens();
-  unsigned int offset = 5; // pc is 4 bytes + 1 for the next
+  unsigned int offset = 4; // pc is 4 bytes t
   unsigned int data_seg_end;
   std::vector<unsigned char> bin_file;
+  std::string toHex(const std::vector<unsigned char> &data);
 
 private:
   std::vector<std::string> file_buffer;

@@ -6,7 +6,7 @@
 
 class TokenJmp : public TokenInstr {
 public:
-  TokenJmp(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 13) {}
+  TokenJmp(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 1) {}
   void validate(std::map<std::string, unsigned int> &symbol_table,
                 unsigned int &limit) override;
   std::string label;

@@ -75,7 +75,7 @@ TEST(AssemblyTest, StripCommentsWithData) {
   EXPECT_EQ(expect, assembly.getBuffer()[0]);
 }
 
-TEST(AssemblyTest, ReadAndStrip) {
+/*TEST(AssemblyTest, ReadAndStrip) {
   // More for me to debug not a test
   Assembly assembly;
   std::string filePath = "we.asm";
@@ -85,7 +85,7 @@ TEST(AssemblyTest, ReadAndStrip) {
   for (const std::string &line : file) {
     std::cout << line << std::endl;
   }
-}
+}*/
 
 TEST(AssemblyTest, ValidReadTokenMultiSpace) {
   // Test if we can read a valid token that have tabs and spaces between
@@ -168,7 +168,7 @@ TEST(AssemblyTest, ValidTokenInt) {
 TEST(AssemblyTest, ValidOffset) {
   // after reading a valid token updated offset
   Assembly assembly;
-  unsigned int expect = 6;
+  unsigned int expect = 5;
   std::string line = "K .BYT 'K'";
   assembly.readToken(line);
   EXPECT_EQ(expect, assembly.offset);
@@ -178,7 +178,7 @@ TEST(AssemblyTest, ValidOffset2) {
   // after reading a valid token updated offset.
   // using two tokens
   Assembly assembly;
-  unsigned int expect = 18;
+  unsigned int expect = 17;
   std::string line = "K .BYT 'K'";
   std::string line2 = "ADD R1 R2";
   // readinging in .byt so offset should be 5.
@@ -201,8 +201,8 @@ TEST(AssemblyTest, ValidSymbolTable) {
   unsigned int result1 = assembly.getSymbol("K");
   unsigned int result2 = assembly.getSymbol("MAIN");
 
-  EXPECT_EQ(5, result1);
-  EXPECT_EQ(6, result2);
+  EXPECT_EQ(4, result1);
+  EXPECT_EQ(5, result2);
 }
 
 TEST(AssemblyTest, InvalidSameSymbol) {
@@ -318,10 +318,10 @@ TEST(AssemblyTest, ValidPassOne) {
   // we should have one symbol K at offset 5
   EXPECT_NO_THROW(assembly.passOne(filePath));
   EXPECT_EQ(5, assembly.getTokens().size());
-  EXPECT_EQ(5, assembly.getSymbol("K"));
+  EXPECT_EQ(4, assembly.getSymbol("K"));
 }
 
-TEST(AssemblyTest, ValidPassTwo) {
+TEST(AssemblyTest, InalidPass) {
   Assembly assembly;
 
   // Create a temporary file path
@@ -332,15 +332,11 @@ TEST(AssemblyTest, ValidPassTwo) {
 
   if (outputFile.is_open()) {
     std::string fileContents =
-        std::string(";This is a comment\n") + std::string("K .BYT 'K'\n") +
-        std::string("TWO .INT 0x02\n") + std::string("\n") +
-        std::string("THREE .INT 0x03\n") + std::string(".BYT\n") +
-        std::string("MAIN ADD R1 R2\n") + std::string("JMP MAIN\n") +
-        std::string("SUB R2 R3\n") + std::string(" DIV R3 R4\n") +
-        std::string(" DIV R4 R5\n") + std::string("STR R1 K\n") +
-        std::string("STB R2 K\n") + std::string("MUL R2 R15\n") +
+        std::string("  ADD  R1, R2\n") + std::string(" SUB   R2,R3\n") +
+        std::string("DIV R3 R4\n") + std::string("STR R1 K\n") +
+        std::string("STB R2   K\n") + std::string("MUL R2 R15\n") +
         std::string("MOV R6 R7\n") + std::string("LDR R8 TWO\n") +
-        std::string("LDB R9 K\n") + std::string("TRP #0\n");
+        std::string("LDB R9 K\n");
     outputFile << fileContents;
     outputFile.close();
   } else {
@@ -348,9 +344,8 @@ TEST(AssemblyTest, ValidPassTwo) {
   }
 
   // build tokens and table
-  EXPECT_NO_THROW(assembly.passOne(filePath));
-  EXPECT_NO_THROW(assembly.passTwo());
-  // EXPECT_EQ(42, assembly.bin_file.size());
+  EXPECT_THROW(assembly.passOne(filePath), PassOneException);
+  EXPECT_THROW(assembly.passTwo(), PassTwoException);
 }
 
 TEST(AssemblyTest, ValidPassTwoNoData) {
@@ -378,7 +373,7 @@ TEST(AssemblyTest, ValidPassTwoNoData) {
   EXPECT_NO_THROW(assembly.passTwo());
 }
 
-TEST(AssemblyTest, InalidPass) {
+TEST(AssemblyTest, ValidPassTwo) {
   Assembly assembly;
 
   // Create a temporary file path
@@ -389,11 +384,16 @@ TEST(AssemblyTest, InalidPass) {
 
   if (outputFile.is_open()) {
     std::string fileContents =
-        std::string("ADD R1 R2\n") + std::string("SUB R2 R3\n") +
-        std::string("DIV R3 R4\n") + std::string("STR R1 K\n") +
+        std::string(";This is a comment\n") + std::string("K .BYT 'K'\n") +
+        std::string("TWO .INT 0x02\n") + std::string("\n") +
+        std::string("THREE .INT 0x03\n") + std::string(".BYT\n") +
+        std::string("JMP MAIN\n") + std::string("MAIN ADD R1 R2\n") +
+        std::string("SUB R2 R3\n") + std::string(" DIV R3 R4\n") +
+        std::string(" DIV R4 R5\n") + std::string("STR R1 K\n") +
         std::string("STB R2 K\n") + std::string("MUL R2 R15\n") +
         std::string("MOV R6 R7\n") + std::string("LDR R8 TWO\n") +
-        std::string("LDB R9 K\n");
+        std::string("LDB R9 K\n") + std::string("TRP #0\n") +
+        std::string("                                       ");
     outputFile << fileContents;
     outputFile.close();
   } else {
@@ -401,6 +401,7 @@ TEST(AssemblyTest, InalidPass) {
   }
 
   // build tokens and table
-  EXPECT_THROW(assembly.passOne(filePath), PassOneException);
-  EXPECT_THROW(assembly.passTwo(), PassTwoException);
+  EXPECT_NO_THROW(assembly.passOne(filePath));
+  EXPECT_NO_THROW(assembly.passTwo());
+  // EXPECT_EQ(42, assembly.bin_file.size());
 }

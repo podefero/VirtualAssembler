@@ -17,6 +17,9 @@ public:
     int operand2;
   };
   Instruction readInstruction(unsigned int offset);
+  void writeByte(unsigned int offset, unsigned char value);
+  void writeInt(unsigned int offset, unsigned int value);
+  void writeInstruction(unsigned int offset, Instruction value);
   unsigned int pc = 0;
   unsigned int code_seg_start = 0;
   unsigned int code_seg_end = 0;

@@ -2,6 +2,7 @@
 #include "PassOneException.h"
 #include "PassTwoException.h"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
@@ -26,24 +27,35 @@ void Assembly::readFile(const std::string &filePath) {
 // Reads in file, strips comments, reads tokens and builds symbol_table
 void Assembly::passOne(const std::string &filePath) {
 
+  size_t count = 0;
+  size_t size = 0;
   try {
     readFile(filePath);
     stripComments();
     for (const std::string &line : file_buffer) {
       // read in line, if empty skip. Else tokenize
       if (line.size() != 0) {
+        count++;
         std::string copy_line = line;
+        size = copy_line.size();
         // tokenize
         Token *token = readToken(copy_line);
-        if (token)
+        if (token) {
           tokens.push_back(token);
+          // std::string hex_line = toHex(token->getBytes());
+          //  std::cout << std::to_string(count) << " " << line << std::endl;
+        }
+        if (found_trap0)
+          return;
       }
     }
     // readToken function will build symbol_table
   }
 
   catch (const PassOneException &ex) {
-    throw PassOneException(std::string(ex.what()));
+    throw PassOneException(std::string(ex.what()) +
+                           " line #: " + std::to_string(count) +
+                           " size: " + std::to_string(size));
   }
 
   // if we haven't found trap 0 then throw
@@ -58,6 +70,9 @@ void Assembly::passTwo() {
     // validate
     try {
       tokens[i]->validate(symbol_table, data_seg_end);
+      // std::cout << std::to_string(i + 1) << " " <<
+      // toHex(tokens[i]->getBytes())
+      //<< std::endl;
     } catch (const PassTwoException &ex) {
       throw PassTwoException(std::string(ex.what()) + " at index " +
                              std::to_string(i) + " in tokens");
@@ -96,7 +111,7 @@ void Assembly::passTwo() {
 }
 
 void Assembly::stripComments() {
-  std::regex commentRegex("(^;.*)|( ;.*)|(\\s$)");
+  std::regex commentRegex("(^;.*)|( ;.*)|(\\s+$)");
   for (std::string &line : file_buffer) {
     line = std::regex_replace(line, commentRegex, "");
   }
@@ -110,9 +125,11 @@ Token *Assembly::readToken(std::string &line) {
   // before spliting remove commas and  extra white space
   std::regex commaRegex(",");
   std::regex spaceRegex("\\s+");
+  std::regex fspaceRegex("^\\s+"); // remove first space in line
 
   line = std::regex_replace(line, commaRegex, " ");
   line = std::regex_replace(line, spaceRegex, " ");
+  line = std::regex_replace(line, fspaceRegex, "");
 
   std::stringstream ss(line);
   std::string item;
@@ -336,7 +353,7 @@ Token *Assembly::createToken(const std::string item, const std::string value,
       done_instruction = true;
       //- instr size becuase we moved offset from read inst
       //-1 becuase data seg is back one
-      data_seg_end = (offset - instr_size) - 1;
+      data_seg_end = (offset - instr_size);
       // write this to binary file
       bin_file.push_back(static_cast<unsigned char>(data_seg_end & 0xFF));
       bin_file.push_back(
@@ -404,5 +421,16 @@ unsigned int Assembly::getSymbol(const std::string key) {
     return 0;
   }
 }
+
+// convert char array to hex
+std::string Assembly::toHex(const std::vector<unsigned char> &data) {
+  std::stringstream ss;
+  ss << std::hex << std::setfill('0');
+  for (unsigned char c : data) {
+    ss << std::setw(2) << static_cast<int>(c);
+  }
+  return ss.str();
+}
+
 const std::vector<std::string> &Assembly::getBuffer() { return file_buffer; }
 std::vector<Token *> Assembly::getTokens() { return tokens; }

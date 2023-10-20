@@ -7,5 +7,5 @@ void TokenJmp::validate(std::map<std::string, unsigned int> &symbol_table,
   if (label_offset > limit) {
     op1 = label_offset;
   } else
-    throw PassTwoException("JMP label is in data seg. Should be in code seg");
+    throw PassTwoException("JMP label is in data seg. Should be in code seg.");
 }
