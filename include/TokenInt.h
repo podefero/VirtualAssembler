@@ -1,12 +1,12 @@
-#ifndef TOKEN_BYTE_H
-#define TOKEN_BYTE_H
+#ifndef TOKEN_INT_H
+#define TOKEN_INT_H
 
 #include "Token.h"
 #include <vector>
 
-class TokenByte : public Token {
+class TokenInt : public Token {
 public:
-  TokenByte(unsigned char value);
+  TokenInt(int value);
   void validate(std::map<std::string, unsigned int> &symbol_table,
                 unsigned int &limit) override;
   std::vector<unsigned char> getBytes() override;

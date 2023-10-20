@@ -1,15 +1,14 @@
 #ifndef TOKEN_INSTR_H
 #define TOKEN_INSTR_H
 
+#include "PassTwoException.h"
 #include "Token.h"
 #include <vector>
 
 class TokenInstr : public Token {
 public:
   virtual ~TokenInstr() = default;
-  TokenInstr(unsigned int offset, unsigned int op1, unsigned int op2,
-             unsigned int opcode) {
-    this->offset = offset;
+  TokenInstr(unsigned int op1, unsigned int op2, unsigned int opcode) {
     this->op1 = op1;
     this->op2 = op2;
     this->opcode = opcode;
@@ -40,7 +39,7 @@ public:
     return bytes;
   }
 
-private:
+protected:
   unsigned int opcode;
   unsigned int op1;
   unsigned int op2;

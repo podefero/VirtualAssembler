@@ -1,12 +1,12 @@
-#ifndef TOKEN_ADD_H
-#define TOKEN_ADD_H
+#ifndef TOKEN_MUL_H
+#define TOKEN_MUL_H
 
 #include "TokenInstr.h"
 #include <vector>
 
-class TokenAdd : public TokenInstr {
+class TokenMul : public TokenInstr {
 public:
-  TokenAdd(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 13) {}
+  TokenMul(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 16) {}
   void validate(std::map<std::string, unsigned int> &symbol_table,
                 unsigned int &limit) override;
 };

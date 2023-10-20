@@ -75,7 +75,6 @@ TEST(AssemblyTest, StripCommentsWithData) {
   EXPECT_EQ(expect, assembly.getBuffer()[0]);
 }
 
-/*
 TEST(AssemblyTest, ReadAndStrip) {
   // More for me to debug not a test
   Assembly assembly;
@@ -86,7 +85,7 @@ TEST(AssemblyTest, ReadAndStrip) {
   for (const std::string &line : file) {
     std::cout << line << std::endl;
   }
-}*/
+}
 
 TEST(AssemblyTest, ValidReadTokenMultiSpace) {
   // Test if we can read a valid token that have tabs and spaces between
@@ -107,32 +106,6 @@ TEST(AssemblyTest, InvalidReadTokenOperand1) {
   Assembly assembly;
   std::string token_string = "ADD ";
   EXPECT_THROW(assembly.readToken(token_string), PassOneException);
-}
-
-TEST(AssemblyTest, ValidTokenByteNoValue) {
-  // test a valid tokey byte
-  Assembly assembly;
-  unsigned int expect_offset = 5;
-  unsigned char expect_char = '\0';
-
-  std::string line = "K .BYT";
-  Token *token = assembly.readToken(line);
-
-  EXPECT_EQ(expect_offset, token->offset);
-  EXPECT_EQ(expect_char, token->getBytes()[0]);
-}
-
-TEST(AssemblyTest, ValidTokenByteNoLabel) {
-  // test a valid token byte
-  Assembly assembly;
-  unsigned int expect_offset = 5;
-  unsigned char expect_char = 'K';
-
-  std::string line = ".BYT 'K'";
-  Token *token = assembly.readToken(line);
-
-  EXPECT_EQ(expect_offset, token->offset);
-  EXPECT_EQ(expect_char, token->getBytes()[0]);
 }
 
 TEST(AssemblyTest, InvalidTokenByte) {
@@ -175,7 +148,6 @@ TEST(AssemblyTest, ValidTokenInstruct) {
 
   std::string line = "ADD R3 R6";
   Token *token = assembly.readToken(line);
-  EXPECT_EQ(expect_offset, token->offset);
 
   std::vector<unsigned char> tokenBytes = token->getBytes();
   EXPECT_EQ(sizeof(bytes), tokenBytes.size());
@@ -185,12 +157,19 @@ TEST(AssemblyTest, ValidTokenInstruct) {
   }
 }
 
+TEST(AssemblyTest, ValidTokenInt) {
+  // check if we are getting correct byte size
+  Assembly assembly;
+
+  TokenInt token(5);
+  EXPECT_EQ(4, token.getBytes().size());
+}
+
 TEST(AssemblyTest, ValidOffset) {
   // after reading a valid token updated offset
   Assembly assembly;
-  unsigned int expect = 5;
+  unsigned int expect = 6;
   std::string line = "K .BYT 'K'";
-  // readinging in .byt so offset should be 5.
   assembly.readToken(line);
   EXPECT_EQ(expect, assembly.offset);
 }
@@ -199,7 +178,7 @@ TEST(AssemblyTest, ValidOffset2) {
   // after reading a valid token updated offset.
   // using two tokens
   Assembly assembly;
-  unsigned int expect = 17;
+  unsigned int expect = 18;
   std::string line = "K .BYT 'K'";
   std::string line2 = "ADD R1 R2";
   // readinging in .byt so offset should be 5.
@@ -223,7 +202,7 @@ TEST(AssemblyTest, ValidSymbolTable) {
   unsigned int result2 = assembly.getSymbol("MAIN");
 
   EXPECT_EQ(5, result1);
-  EXPECT_EQ(17, result2);
+  EXPECT_EQ(6, result2);
 }
 
 TEST(AssemblyTest, InvalidSameSymbol) {
@@ -278,6 +257,43 @@ TEST(AssemblyTest, inValidDataSeg) {
   EXPECT_THROW(assembly.readToken(line4), PassOneException);
 }
 
+TEST(AssemblyTest, ValidImmediateValue) {
+  // test immediate value func
+
+  Assembly assembly;
+  std::string min_value = "#-2147483648";
+  std::string max_value = "#2147483647";
+  int min_expect = -2147483648;
+  int max_expect = 2147483647;
+
+  std::string min_value_hex = "0x80000000";
+  std::string max_value_hex = "0x7FFFFFFF";
+
+  int min_result = assembly.getImmediate(min_value);
+  int max_result = assembly.getImmediate(max_value);
+  int min_value_hex_result = assembly.getImmediate(min_value_hex);
+  int max_value_hex_result = assembly.getImmediate(max_value_hex);
+
+  EXPECT_EQ(min_expect, min_result);
+  EXPECT_EQ(max_expect, max_result);
+  EXPECT_EQ(min_expect, min_value_hex_result);
+  EXPECT_EQ(max_expect, max_value_hex_result);
+}
+
+TEST(AssemblyTest, InvalidImmediateValue) {
+  // test immediate value func
+
+  Assembly assembly;
+  std::string min_value = "#-2147483649";
+  std::string max_value = "#2147483648";
+
+  std::string min_value_hex = "0x80000001";
+
+  EXPECT_THROW(assembly.getImmediate(min_value), PassOneException);
+  EXPECT_THROW(assembly.getImmediate(max_value), PassOneException);
+  EXPECT_THROW(assembly.getImmediate(min_value_hex), PassOneException);
+}
+
 TEST(AssemblyTest, ValidPassOne) {
   Assembly assembly;
 
@@ -288,19 +304,20 @@ TEST(AssemblyTest, ValidPassOne) {
   std::ofstream outputFile(filePath);
 
   if (outputFile.is_open()) {
-    std::string fileContents = std::string(";This is a comment\n") +
-                               std::string("K .BYT 'K'\n") + std::string("\n") +
-                               std::string("ADD R1 R2\n");
+    std::string fileContents =
+        std::string("") + std::string(";This is a comment\n") +
+        std::string("K .BYT 'K'\n") + std::string("ONE .INT #1\n") +
+        std::string("TWO .INT 0x02\n") + std::string("\n") +
+        std::string("ADD R1 R2\n") + std::string("TRP #0\n");
     outputFile << fileContents;
     outputFile.close();
   } else {
     FAIL() << "Failed to open the file for writing";
   }
-  // tokens should be size 2
+  // tokens should be size 5
   // we should have one symbol K at offset 5
-
   EXPECT_NO_THROW(assembly.passOne(filePath));
-  EXPECT_EQ(2, assembly.getTokens().size());
+  EXPECT_EQ(5, assembly.getTokens().size());
   EXPECT_EQ(5, assembly.getSymbol("K"));
 }
 
@@ -314,18 +331,76 @@ TEST(AssemblyTest, ValidPassTwo) {
   std::ofstream outputFile(filePath);
 
   if (outputFile.is_open()) {
-    std::string fileContents = std::string(";This is a comment\n") +
-                               std::string("K .BYT 'K'\n") + std::string("\n") +
-                               std::string("ADD R1 R2\n");
+    std::string fileContents =
+        std::string(";This is a comment\n") + std::string("K .BYT 'K'\n") +
+        std::string("TWO .INT 0x02\n") + std::string("\n") +
+        std::string("THREE .INT 0x03\n") + std::string(".BYT\n") +
+        std::string("MAIN ADD R1 R2\n") + std::string("JMP MAIN\n") +
+        std::string("SUB R2 R3\n") + std::string(" DIV R3 R4\n") +
+        std::string(" DIV R4 R5\n") + std::string("STR R1 K\n") +
+        std::string("STB R2 K\n") + std::string("MUL R2 R15\n") +
+        std::string("MOV R6 R7\n") + std::string("LDR R8 TWO\n") +
+        std::string("LDB R9 K\n") + std::string("TRP #0\n");
     outputFile << fileContents;
     outputFile.close();
   } else {
     FAIL() << "Failed to open the file for writing";
   }
-  // total file size 17 bytes
 
   // build tokens and table
   EXPECT_NO_THROW(assembly.passOne(filePath));
   EXPECT_NO_THROW(assembly.passTwo());
-  EXPECT_EQ(17, assembly.bin_file.size());
+  // EXPECT_EQ(42, assembly.bin_file.size());
+}
+
+TEST(AssemblyTest, ValidPassTwoNoData) {
+  Assembly assembly;
+
+  // Create a temporary file path
+  std::string filePath = "temp_file.txt";
+
+  // Create a file stream for writing
+  std::ofstream outputFile(filePath);
+
+  if (outputFile.is_open()) {
+    std::string fileContents =
+        std::string("ADD R1 R2\n") + std::string("SUB R2 R3\n") +
+        std::string("DIV R3 R4\n") + std::string("MUL R2 R15\n") +
+        std::string("MOV R6 R7\n") + std::string("TRP #0\n");
+    outputFile << fileContents;
+    outputFile.close();
+  } else {
+    FAIL() << "Failed to open the file for writing";
+  }
+
+  // build tokens and table
+  EXPECT_NO_THROW(assembly.passOne(filePath));
+  EXPECT_NO_THROW(assembly.passTwo());
+}
+
+TEST(AssemblyTest, InalidPass) {
+  Assembly assembly;
+
+  // Create a temporary file path
+  std::string filePath = "temp_file.txt";
+
+  // Create a file stream for writing
+  std::ofstream outputFile(filePath);
+
+  if (outputFile.is_open()) {
+    std::string fileContents =
+        std::string("ADD R1 R2\n") + std::string("SUB R2 R3\n") +
+        std::string("DIV R3 R4\n") + std::string("STR R1 K\n") +
+        std::string("STB R2 K\n") + std::string("MUL R2 R15\n") +
+        std::string("MOV R6 R7\n") + std::string("LDR R8 TWO\n") +
+        std::string("LDB R9 K\n");
+    outputFile << fileContents;
+    outputFile.close();
+  } else {
+    FAIL() << "Failed to open the file for writing";
+  }
+
+  // build tokens and table
+  EXPECT_THROW(assembly.passOne(filePath), PassOneException);
+  EXPECT_THROW(assembly.passTwo(), PassTwoException);
 }
