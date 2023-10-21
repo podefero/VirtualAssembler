@@ -1,4 +1,4 @@
-# Project 1
+# Project 2
 
 ## Build Instructions
 
@@ -25,8 +25,12 @@ cd build
 
 ```bash
 ./main_prog <filePath>
+#To run assembly portion
+./main_prog someFile.asm #This will create a output.bin file
+
+#To run binary file
+./main_prog outputbin.bin
 ```
-If you don't supply a filepath it will run HelloWorld.bin by default.
 
 ## Running Tests
 
