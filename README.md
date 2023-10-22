@@ -22,11 +22,13 @@ To run the main program, follow these steps:
 cd build
 ```
 2. Execute the main program with a file path as an argument:
+    - In this case for Project 2 use the HelloWord.asm as argument, below is instructions.
 
 ```bash
 ./main_prog <filePath>
-#To run assembly portion
-./main_prog someFile.asm #This will create a output.bin file
+
+#To run assembly portion using my Hellworld.asm
+./main_prog ../HelloWorld.asm #This will create a output.bin file
 
 #To run binary file
 ./main_prog outputbin.bin
