@@ -1,31 +1,7 @@
 #ifndef ASSEMBLY_H
 #define ASSEMBLY_H
 
-#include "Token.h"
-#include "TokenAdd.h"
-#include "TokenByte.h"
-#include "TokenDiv.h"
-#include "TokenInstr.h"
-#include "TokenInt.h"
-#include "TokenJmp.h"
-#include "TokenBnz.h"
-#include "TokenBgt.h"
-#include "TokenBlt.h"
-#include "TokenBrz.h"
-#include "TokenMovi.h"
-#include "TokenLda.h"
-#include "TokenJmr.h"
-#include "TokenLdb.h"
-#include "TokenLdr.h"
-#include "TokenLdri.h"
-#include "TokenMove.h"
-#include "TokenMul.h"
-#include "TokenStb.h"
-#include "TokenStbi.h"
-#include "TokenLdbi.h"
-#include "TokenStr.h"
-#include "TokenSub.h"
-#include "TokenTrap.h"
+#include "Tokens.h"
 #include <map>
 #include <regex>
 #include <string>
@@ -47,22 +23,22 @@ public:
 
     Token *readToken(std::string &line);
 
-    Token *createToken(const std::string tokenType, const std::string value,
-                       const std::string op2);
+    Token *createToken(const std::string& tokenType, const std::string& value,
+                        const std::string& op2);
 
-    int getValidRegister(const std::string &item);
+    static int getValidRegister(const std::string &item);
 
-    int getImmediate(const std::string &item);
+    static int getImmediate(const std::string &item);
 
-    unsigned int getSymbol(const std::string key);
+    unsigned int getSymbol(const std::string& key);
 
     std::vector<Token *> getTokens();
 
     unsigned int offset = 4; // pc is 4 bytes t
-    unsigned int data_seg_end;
+    unsigned int data_seg_end{};
     std::vector<unsigned char> bin_file;
 
-    std::string toHex(const std::vector<unsigned char> &data);
+    static std::string toHex(const std::vector<unsigned char> &data);
 
 private:
     std::vector<std::string> file_buffer;

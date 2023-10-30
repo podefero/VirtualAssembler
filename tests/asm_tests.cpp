@@ -41,7 +41,7 @@ TEST(AssemblyTest, ValidStripComments) {
   EXPECT_NO_THROW(assembly.readFile(filePath));
 
   // strip comment
-  std::string expect = "";
+  std::string expect;
   assembly.stripComments();
 
   EXPECT_EQ(expect, assembly.getBuffer()[0]);
@@ -135,8 +135,7 @@ TEST(AssemblyTest, InvalidTokenSize) {
 TEST(AssemblyTest, ValidTokenInstruct) {
   // Test instruction has the right bytes
   Assembly assembly;
-  unsigned int expect_offset = 16;
-  unsigned char bytes[] = {13, 0, 0, 0, 3, 0, 0, 0, 6, 0, 0, 0};
+    unsigned char bytes[] = {13, 0, 0, 0, 3, 0, 0, 0, 6, 0, 0, 0};
 
   std::string line = "ADD R3 R6";
   Token *token = assembly.readToken(line);
@@ -264,11 +263,11 @@ TEST(AssemblyTest, ValidImmediateValue) {
   std::string char_value = "'K'"; // 0x4B
   int char_expect = 0x4B;
 
-  int min_result = assembly.getImmediate(min_value);
-  int max_result = assembly.getImmediate(max_value);
-  int min_value_hex_result = assembly.getImmediate(min_value_hex);
-  int max_value_hex_result = assembly.getImmediate(max_value_hex);
-  int char_result = assembly.getImmediate(char_value);
+  int min_result = Assembly::getImmediate(min_value);
+  int max_result = Assembly::getImmediate(max_value);
+  int min_value_hex_result = Assembly::getImmediate(min_value_hex);
+  int max_value_hex_result = Assembly::getImmediate(max_value_hex);
+  int char_result = Assembly::getImmediate(char_value);
 
   EXPECT_EQ(min_expect, min_result);
   EXPECT_EQ(max_expect, max_result);
@@ -401,4 +400,22 @@ TEST(AssemblyTest, ValidPassTwo) {
   EXPECT_NO_THROW(assembly.passOne(filePath));
   EXPECT_NO_THROW(assembly.passTwo());
   // EXPECT_EQ(42, assembly.bin_file.size());
+}
+
+TEST(AssemblyTest, ValidateLDB){
+    //test if we get valid LDB for both types
+    Assembly assembly;
+    std::string line = "FISH .BYT 'F'";
+    std::string line1 = "LDB R1 FISH";
+    std::string line2 = "LDB R2 R1";
+
+    Token *byt = assembly.readToken(line);
+    Token *ldb = assembly.readToken(line1);
+    Token *ldbi = assembly.readToken(line2);
+
+    std::string ldb_result = Assembly::toHex(ldb->getBytes());
+    std::string ldbi_result = Assembly::toHex(ldbi->getBytes());
+
+    EXPECT_EQ("0c0000000100000000000000", ldb_result);
+    EXPECT_EQ("190000000200000001000000", ldbi_result);
 }

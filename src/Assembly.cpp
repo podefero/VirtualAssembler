@@ -9,7 +9,7 @@
 Assembly::Assembly() {}
 
 // Try to read file and put it into buffer for future regex
-// Throw execption if failed to read
+// Throw exception if failed to read
 void Assembly::readFile(const std::string &filePath) {
     std::ifstream fileStream(filePath);
 
@@ -34,7 +34,7 @@ void Assembly::passOne(const std::string &filePath) {
         stripComments();
         for (const std::string &line: file_buffer) {
             // read in line, if empty skip. Else tokenize
-            if (line.size() != 0) {
+            if (!line.empty()) {
                 count++;
                 std::string copy_line = line;
                 size = copy_line.size();
@@ -192,8 +192,6 @@ Token *Assembly::readToken(std::string &line) {
             }
 
             if (token != nullptr) {
-                // add symbol to table
-                // index 1 means we do have a label on the left
                 return token;
             }
         }
@@ -208,8 +206,8 @@ Token *Assembly::readToken(std::string &line) {
 }
 
 // create token. value can be op1 for instructions
-Token *Assembly::createToken(const std::string item, const std::string value,
-                             const std::string op2) {
+Token *Assembly::createToken(const std::string& item, const std::string& value,
+                              const std::string& op2) {
     unsigned int instr_size = 12;
     Token *token = nullptr;
 
@@ -218,7 +216,7 @@ Token *Assembly::createToken(const std::string item, const std::string value,
 
         //.BYT
         offset += 1;
-        if (value.size() > 0) {
+        if (!value.empty()) {
             token = new TokenByte(getImmediate(value));
         } else
             token = new TokenByte('\0');
@@ -228,7 +226,7 @@ Token *Assembly::createToken(const std::string item, const std::string value,
         //.INT
         offset += 4;
         int immediate = 0;
-        if (value.size() > 0)
+        if (!value.empty())
             immediate = getImmediate(value);
         token = new TokenInt(immediate);
 
@@ -274,6 +272,13 @@ Token *Assembly::createToken(const std::string item, const std::string value,
         int rs = getValidRegister(op2);
         token = new TokenMove(rd, rs);
 
+    } else if (item == "MOVI") {
+
+        //MOVI
+        offset += instr_size;
+        int rd = getValidRegister(value);
+        token = new TokenMovi(rd, getImmediate(op2));
+
     } else if (item == "JMP") {
 
         // JMP
@@ -294,10 +299,30 @@ Token *Assembly::createToken(const std::string item, const std::string value,
         token = new TokenBnz(getValidRegister(value), 0);
         token->label = op2;
 
-    } if (item == "STR") {
+    } else if (item == "BGT") {
+
+        //BGT
+        offset += instr_size;
+        token = new TokenBgt(getValidRegister(value), 0);
+        token->label = op2;
+
+    }else if (item == "BLT") {
+
+        //BLT
+        offset += instr_size;
+        token = new TokenBlt(getValidRegister(value), 0);
+        token->label = op2;
+
+    }else if (item == "BRZ") {
+
+        //BRZ
+        offset += instr_size;
+        token = new TokenBrz(getValidRegister(value), 0);
+        token->label = op2;
+
+    }else if (item == "STR") {
 
         // STR
-        // Use TokenStr ptr to handle setting the label variable
         offset += instr_size;
         int rs = getValidRegister(value);
         token = new TokenStr(rs, 0);
@@ -305,28 +330,53 @@ Token *Assembly::createToken(const std::string item, const std::string value,
 
     } else if (item == "LDR") {
 
-        // LDR
+        // LDR or LDRI (indirect)
         offset += instr_size;
         int rd = getValidRegister(value);
-        token = new TokenLdr(rd, 0);
-        token->label = op2;
+        int rg;
+        try{
+            // if we have an valid rg then we use LDB RD RG, else LDB RD Label
+            rg = getValidRegister(op2);
+            token = new TokenLdri(rd, rg);
+        } catch (const PassOneException &ex) {
+            token = new TokenLdr(rd, 0);
+            token->label = op2;
+        }
+    } else if (item == "LDA") {
 
-    } else if (item == "STB") {
-
-        // STB
+        //LDA
         offset += instr_size;
-        int rs = getValidRegister(value);
-        token = new TokenStb(rs, 0);
+        token = new TokenLda(getValidRegister(value), 0);
         token->label = op2;
 
+    }else if (item == "STB") {
+
+        // STB or STBI (indirect)
+        offset += instr_size;
+        int rd = getValidRegister(value);
+        int rg;
+        try{
+            // if we have an valid rg then we use LDB RD RG, else LDB RD Label
+            rg = getValidRegister(op2);
+            token = new TokenStbi(rd, rg);
+        } catch (const PassOneException &ex) {
+            token = new TokenStb(rd, 0);
+            token->label = op2;
+        }
     } else if (item == "LDB") {
 
-        // LDB
+        // LDB or LDBI (indirect)
         offset += instr_size;
         int rd = getValidRegister(value);
-        token = new TokenLdb(rd, 0);
-        token->label = op2;
-
+        int rg;
+        try{
+            // if we have an valid rg then we use LDB RD RG, else LDB RD Label
+            rg = getValidRegister(op2);
+            token = new TokenLdbi(rd, rg);
+        } catch (const PassOneException &ex) {
+            token = new TokenLdb(rd, 0);
+            token->label = op2;
+        }
     } else if (item == "TRP") {
 
         // TRP
@@ -342,7 +392,7 @@ Token *Assembly::createToken(const std::string item, const std::string value,
         else if (immediate > 0 && immediate <= 7)
             token = new TokenTrap(immediate, 0);
         else
-            throw PassOneException("Invalid TRP value " + immediate);
+            throw PassOneException("Invalid TRP value " + std::to_string(immediate));
     }
 
     // if we have a valid token and if it's not a directive
@@ -379,7 +429,7 @@ int Assembly::getValidRegister(const std::string &item) {
         registerNumber = std::stoi(item.substr(1));
         // check if in register range 0-15
         if (registerNumber >= 0 && registerNumber <= 15) {
-            return static_cast<unsigned int>(registerNumber);
+            return (registerNumber);
         }
     }
 
@@ -420,7 +470,7 @@ int Assembly::getImmediate(const std::string &item) {
 }
 
 // access value from symbol table
-unsigned int Assembly::getSymbol(const std::string key) {
+unsigned int Assembly::getSymbol(const std::string& key) {
     try {
         return symbol_table.at(key);
     } catch (const std::out_of_range &e) {
