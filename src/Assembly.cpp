@@ -241,7 +241,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         offset += instr_size;
         int rd = getValidRegister(value);
         int rs = getValidRegister(op2);
-        token = new TokenAdd(rd, rs);
+        token = new TokenInstr(rd, rs, OpCode::ADD);
 
     } else if (item == "SUB") {
 
@@ -249,7 +249,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         offset += instr_size;
         int rd = getValidRegister(value);
         int rs = getValidRegister(op2);
-        token = new TokenSub(rd, rs);
+        token = new TokenInstr(rd, rs, OpCode::SUB);
 
     } else if (item == "DIV") {
 
@@ -257,7 +257,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         offset += instr_size;
         int rd = getValidRegister(value);
         int rs = getValidRegister(op2);
-        token = new TokenDiv(rd, rs);
+        token = new TokenInstr(rd, rs, OpCode::DIV);
 
     } else if (item == "MUL") {
 
@@ -265,7 +265,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         offset += instr_size;
         int rd = getValidRegister(value);
         int rs = getValidRegister(op2);
-        token = new TokenMul(rd, rs);
+        token = new TokenInstr(rd, rs, OpCode::MUL);
 
     } else if (item == "MOV") {
 
@@ -273,54 +273,54 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         offset += instr_size;
         int rd = getValidRegister(value);
         int rs = getValidRegister(op2);
-        token = new TokenMove(rd, rs);
+        token = new TokenInstr(rd, rs, OpCode::MOV);
 
     } else if (item == "MOVI") {
 
         //MOVI
         offset += instr_size;
         int rd = getValidRegister(value);
-        token = new TokenMovi(rd, getImmediate(op2));
+        token = new TokenInstr(rd, getImmediate(op2), OpCode::MOVI);
 
     } else if (item == "JMP") {
 
         // JMP
         offset += instr_size;
-        token = new TokenJmp(0, 0);
+        token = new TokenInstr(0, 0, OpCode::JMP);
         token->label = value;
 
     } else if (item == "JMR") {
 
         //JMR
         offset += instr_size;
-        token = new TokenJmr(getValidRegister(value), 0);
+        token = new TokenInstr(getValidRegister(value), 0, OpCode::JMR);
 
     } else if (item == "BNZ") {
 
         //BNZ
         offset += instr_size;
-        token = new TokenBnz(getValidRegister(value), 0);
+        token = new TokenInstr(getValidRegister(value), 0, OpCode::BNZ);
         token->label = op2;
 
     } else if (item == "BGT") {
 
         //BGT
         offset += instr_size;
-        token = new TokenBgt(getValidRegister(value), 0);
+        token = new TokenInstr(getValidRegister(value), 0, OpCode::BGT);
         token->label = op2;
 
     } else if (item == "BLT") {
 
         //BLT
         offset += instr_size;
-        token = new TokenBlt(getValidRegister(value), 0);
+        token = new TokenInstr(getValidRegister(value), 0, OpCode::BLT);
         token->label = op2;
 
     } else if (item == "BRZ") {
 
         //BRZ
         offset += instr_size;
-        token = new TokenBrz(getValidRegister(value), 0);
+        token = new TokenInstr(getValidRegister(value), 0, OpCode::BRZ);
         token->label = op2;
 
     } else if (item == "STR") {
@@ -328,7 +328,8 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         // STR
         offset += instr_size;
         int rs = getValidRegister(value);
-        token = new TokenStr(rs, 0);
+        token = new TokenInstr(rs, 0, OpCode::STR);
+        token->inDataSeg = true;
         token->label = op2;
 
     } else if (item == "LDR") {
@@ -340,17 +341,19 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
             rg = getValidRegister(op2);
-            token = new TokenLdri(rd, rg);
+            token = new TokenInstr(rd, rg, OpCode::LDRI);
         } catch (const PassOneException &ex) {
-            token = new TokenLdr(rd, 0);
+            token = new TokenInstr(rd, 0, OpCode::LDR);
             token->label = op2;
+            token->inDataSeg = true;
         }
     } else if (item == "LDA") {
 
         //LDA
         offset += instr_size;
-        token = new TokenLda(getValidRegister(value), 0);
+        token = new TokenInstr(getValidRegister(value), 0, OpCode::LDA);
         token->label = op2;
+        token->inDataSeg = true;
 
     } else if (item == "STB") {
 
@@ -361,10 +364,11 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
             rg = getValidRegister(op2);
-            token = new TokenStbi(rd, rg);
+            token = new TokenInstr(rd, rg, OpCode::STBI);
         } catch (const PassOneException &ex) {
-            token = new TokenStb(rd, 0);
+            token = new TokenInstr(rd, 0, OpCode::STB);
             token->label = op2;
+            token->inDataSeg = true;
         }
     } else if (item == "LDB") {
 
@@ -375,10 +379,11 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
             rg = getValidRegister(op2);
-            token = new TokenLdbi(rd, rg);
+            token = new TokenInstr(rd, rg, OpCode::LDBI);
         } catch (const PassOneException &ex) {
-            token = new TokenLdb(rd, 0);
+            token = new TokenInstr(rd, 0, OpCode::LDB);
             token->label = op2;
+            token->inDataSeg = true;
         }
     } else if (item == "TRP") {
 
@@ -389,11 +394,11 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         // trap 0
         if (immediate == 0) {
             found_trap0 = true;
-            token = new TokenTrap(immediate, 0);
+            token = new TokenInstr(immediate, 0, OpCode::TRAP);
         }
             // set token if the trap is a valid value
         else if (immediate > 0 && immediate <= 7)
-            token = new TokenTrap(immediate, 0);
+            token = new TokenInstr(immediate, 0, OpCode::TRAP);
         else
             throw PassOneException("Invalid TRP value " + std::to_string(immediate));
     }
