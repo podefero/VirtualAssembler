@@ -5,29 +5,42 @@
 
 class Registers {
 private:
-  static const int NUM_REGISTERS = 16;
-  int registers[NUM_REGISTERS];
+    static const int NUM_REGISTERS = 17;
+    int registers[NUM_REGISTERS]{};
 
 public:
-  Registers() {
-    for (int i = 0; i < NUM_REGISTERS; i++) {
-      registers[i] = 0;
-    }
-  }
+    static const int NUM_RG = 15; //0 - 15
+    static const int PC = 16;
 
-  int getRegister(int index) {
-    if (index < 0 || index >= NUM_REGISTERS) {
-      throw std::out_of_range("Invalid register index");
+    Registers() {
+        for (int & i : registers) {
+            i = 0;
+        }
     }
-    return registers[index];
-  }
 
-  void setRegister(int index, int value) {
-    if (index < 0 || index >= NUM_REGISTERS) {
-      throw std::out_of_range("Invalid register index");
+    void dumpRegisters() {
+        std::cerr << "Registers:\n***\n";
+        int count = 0;
+        for (int & i : registers) {
+            std::cerr << "R" << std::to_string(count) << ": " << std::to_string(i) << std::endl;
+            count++;
+        }
+        std::cerr << "\n***\n";
     }
-    registers[index] = value;
-  }
+
+    int getRegister(int index) {
+        if (index < 0 || index >= NUM_REGISTERS) {
+            throw std::out_of_range("Invalid register index");
+        }
+        return registers[index];
+    }
+
+    void setRegister(int index, int value) {
+        if (index < 0 || index >= NUM_REGISTERS) {
+            throw std::out_of_range("Invalid register index");
+        }
+        registers[index] = value;
+    }
 };
 
 #endif

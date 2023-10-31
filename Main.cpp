@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
         // validate opcodes by fetch and decode, the second pass we will
         // execute.
-        while (memory_size > vm.memory.pc) {
+        while (memory_size > vm.memory.registers.getRegister(Registers::PC)) {
           if (vm.fetch() != 1) {
             std::cerr << "failed to fetch";
             return 1;
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 
         vm.initPc(); // reset pc
         // execution process. second pass.
-        while (memory_size > vm.memory.pc) {
+        while (memory_size > vm.memory.registers.getRegister(Registers::PC)) {
           if (vm.fetch() != 1)
             std::cerr << "failed to fetch";
           if (vm.decode() != 1)

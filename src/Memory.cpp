@@ -1,7 +1,7 @@
 #include "Memory.h"
 #include "MemoryException.h"
 #include <iostream>
-Memory::Memory() {}
+Memory::Memory() = default;
 
 // loads binary file into memory array
 void Memory::loadFromFile(const std::string &filePath) {
@@ -47,7 +47,7 @@ unsigned char Memory::readByte(unsigned int offset) {
 }
 
 Memory::Instruction Memory::readInstruction(unsigned int offset) {
-  Instruction instruction;
+  Instruction instruction{};
   if (offset + sizeof(Instruction) > size) {
     throw MemoryException("Cant read instruction beyond memory size. Offset :" +
                           std::to_string(offset));

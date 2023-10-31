@@ -30,8 +30,8 @@ public:
     Memory::Instruction getInstruction();
 
 private:
-    Memory::Instruction current_instruction;
-    Operation *operation;
+    Memory::Instruction current_instruction{};
+    Operation *operation{};
     OperationFactory operationFactory;
 };
 
