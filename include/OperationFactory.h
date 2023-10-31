@@ -15,16 +15,34 @@ public:
                 return new OperationJMR(opcode, op1, op2);
             case OpCode::BNZ:
                 return new OperationBNZ(opcode, op1, op2);
+            case OpCode::BGT:
+                return new OperationBGT(opcode, op1, op2);
+            case OpCode::BLT:
+                return new OperationBLT(opcode, op1, op2);
+            case OpCode::BRZ:
+                return new OperationBRZ(opcode,op1,op2);
             case OpCode::MOV:
                 return new OperationMove(opcode, op1, op2);
+            case OpCode::MOVI:
+                return new OperationMOVI(opcode, op1, op2);
+            case OpCode::LDA:
+                return new OperationLDA(opcode,op1,op2);
             case OpCode::STR:
                 return new OperationSTR(opcode, op1, op2);
+            case OpCode::STRI:
+                return new OperationSTRI(opcode, op1, op2);
             case OpCode::LDR:
                 return new OperationLDR(opcode, op1, op2);
+            case OpCode::LDRI:
+                return new OperationLDRI(opcode, op1, op2);
             case OpCode::STB:
                 return new OperationSTB(opcode, op1, op2);
+            case OpCode::STBI:
+                return new OperationSTBI(opcode, op1, op2);
             case OpCode::LDB:
                 return new OperationLDB(opcode, op1, op2);
+            case OpCode::LDBI:
+                return new OperationLDBI(opcode, op1, op2);
             case OpCode::ADD:
                 return new OperationAdd(opcode, op1, op2);
             case OpCode::SUB:

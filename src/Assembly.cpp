@@ -53,6 +53,7 @@ void Assembly::passOne(const std::string &filePath) {
     }
 
     catch (const PassOneException &ex) {
+        dumpSymbolTable();
         throw PassOneException(std::string(ex.what()) +
                                " line #: " + std::to_string(count) +
                                " size: " + std::to_string(size));
@@ -74,10 +75,12 @@ void Assembly::passTwo() {
             // toHex(tokens[i]->getBytes())
             //<< std::endl;
         } catch (const PassTwoException &ex) {
+            dumpSymbolTable();
             throw PassTwoException(std::string(ex.what()) + " at index " +
                                    std::to_string(i) + " in tokens");
             return;
         } catch (const std::out_of_range &e) {
+            dumpSymbolTable();
             throw PassTwoException(
                     "Key not found in the symbol table during pass two " +
                     toHex(tokens[i]->getBytes()) + " index:" + std::to_string(i) +
@@ -206,8 +209,8 @@ Token *Assembly::readToken(std::string &line) {
 }
 
 // create token. value can be op1 for instructions
-Token *Assembly::createToken(const std::string& item, const std::string& value,
-                              const std::string& op2) {
+Token *Assembly::createToken(const std::string &item, const std::string &value,
+                             const std::string &op2) {
     unsigned int instr_size = 12;
     Token *token = nullptr;
 
@@ -292,7 +295,7 @@ Token *Assembly::createToken(const std::string& item, const std::string& value,
         offset += instr_size;
         token = new TokenJmr(getValidRegister(value), 0);
 
-    } else if(item == "BNZ") {
+    } else if (item == "BNZ") {
 
         //BNZ
         offset += instr_size;
@@ -306,21 +309,21 @@ Token *Assembly::createToken(const std::string& item, const std::string& value,
         token = new TokenBgt(getValidRegister(value), 0);
         token->label = op2;
 
-    }else if (item == "BLT") {
+    } else if (item == "BLT") {
 
         //BLT
         offset += instr_size;
         token = new TokenBlt(getValidRegister(value), 0);
         token->label = op2;
 
-    }else if (item == "BRZ") {
+    } else if (item == "BRZ") {
 
         //BRZ
         offset += instr_size;
         token = new TokenBrz(getValidRegister(value), 0);
         token->label = op2;
 
-    }else if (item == "STR") {
+    } else if (item == "STR") {
 
         // STR
         offset += instr_size;
@@ -334,7 +337,7 @@ Token *Assembly::createToken(const std::string& item, const std::string& value,
         offset += instr_size;
         int rd = getValidRegister(value);
         int rg;
-        try{
+        try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
             rg = getValidRegister(op2);
             token = new TokenLdri(rd, rg);
@@ -349,13 +352,13 @@ Token *Assembly::createToken(const std::string& item, const std::string& value,
         token = new TokenLda(getValidRegister(value), 0);
         token->label = op2;
 
-    }else if (item == "STB") {
+    } else if (item == "STB") {
 
         // STB or STBI (indirect)
         offset += instr_size;
         int rd = getValidRegister(value);
         int rg;
-        try{
+        try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
             rg = getValidRegister(op2);
             token = new TokenStbi(rd, rg);
@@ -369,7 +372,7 @@ Token *Assembly::createToken(const std::string& item, const std::string& value,
         offset += instr_size;
         int rd = getValidRegister(value);
         int rg;
-        try{
+        try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
             rg = getValidRegister(op2);
             token = new TokenLdbi(rd, rg);
@@ -470,7 +473,7 @@ int Assembly::getImmediate(const std::string &item) {
 }
 
 // access value from symbol table
-unsigned int Assembly::getSymbol(const std::string& key) {
+unsigned int Assembly::getSymbol(const std::string &key) {
     try {
         return symbol_table.at(key);
     } catch (const std::out_of_range &e) {
@@ -487,6 +490,15 @@ std::string Assembly::toHex(const std::vector<unsigned char> &data) {
         ss << std::setw(2) << static_cast<int>(c);
     }
     return ss.str();
+}
+
+void Assembly::dumpSymbolTable() {
+    std::cerr << "Symbol Table " << std::endl;
+    std::cerr << "***" << std::endl;
+    for (const auto &item: symbol_table) {
+        std::cerr << item.first << ": " << item.second << std::endl;
+    }
+    std::cerr << "***" << std::endl;
 }
 
 const std::vector<std::string> &Assembly::getBuffer() { return file_buffer; }

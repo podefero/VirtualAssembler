@@ -7,6 +7,7 @@
 #include <vector>
 #include "PassTwoException.h"
 #include "Opcodes.h"
+
 class Token {
 public:
     virtual ~Token() = default;
@@ -22,7 +23,7 @@ class TokenInstr : public Token {
 public:
     ~TokenInstr() override = default;
 
-    TokenInstr(unsigned int op1, unsigned int op2, OpCode opCode): op1(op1), op2(op2), opCode(opCode) {}
+    TokenInstr(unsigned int op1, unsigned int op2, OpCode opCode) : op1(op1), op2(op2), opCode(opCode) {}
 
     //if we are over data seg
     static bool isInCodeSeg(unsigned int &data_seg, unsigned int label_offset) {
@@ -151,7 +152,6 @@ public:
 
     }
 
-    std::string label;
 };
 
 class TokenLdb : public TokenInstr {
@@ -254,8 +254,6 @@ public:
         else
             throw PassTwoException("BGT label not in code seg.");
     }
-
-    std::string label;
 };
 
 class TokenBlt : public TokenInstr {
@@ -271,8 +269,6 @@ public:
         else
             throw PassTwoException("BLT label not in code seg.");
     }
-
-    std::string label;
 };
 
 class TokenBnz : public TokenInstr {
@@ -281,15 +277,12 @@ public:
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
-
         unsigned int label_offset = symbol_table.at(label);
         if (isInCodeSeg(limit, label_offset))
             op2 = label_offset;
         else
             throw PassTwoException("BNZ label not in code seg.");
     }
-
-    std::string label;
 };
 
 class TokenBrz : public TokenInstr {
@@ -297,8 +290,7 @@ public:
     TokenBrz(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::BRZ) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
-                  unsigned int &limit) override{
-
+                  unsigned int &limit) override {
         unsigned int label_offset = symbol_table.at(label);
         if (isInCodeSeg(limit, label_offset))
             op2 = label_offset;
@@ -306,7 +298,6 @@ public:
             throw PassTwoException("BRZ label not in code seg.");
     }
 
-    std::string label;
 };
 
 class TokenLda : public TokenInstr {
@@ -323,7 +314,6 @@ public:
             throw PassTwoException("LDA label not in data seg.");
     }
 
-    std::string label;
 };
 
 class TokenLdbi : public TokenInstr {
@@ -331,13 +321,12 @@ public:
     TokenLdbi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::LDBI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
-                  unsigned int &limit) override{
+                  unsigned int &limit) override {
 
         if (!isInDataSeg(limit, op2))
             throw PassTwoException("LDB Op2 address not in data seg.");
     }
 
-    std::string label;
 };
 
 class TokenLdri : public TokenInstr {
@@ -345,12 +334,11 @@ public:
     TokenLdri(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::LDRI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
-                  unsigned int &limit) override{
+                  unsigned int &limit) override {
         if (!isInDataSeg(limit, op2))
             throw PassTwoException("LDR Op2 address not in data seg.");
     }
 
-    std::string label;
 };
 
 class TokenMovi : public TokenInstr {
@@ -358,9 +346,8 @@ public:
     TokenMovi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::MOVI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
-                  unsigned int &limit) override{}
+                  unsigned int &limit) override {}
 
-    std::string label;
 };
 
 class TokenStbi : public TokenInstr {
@@ -368,12 +355,23 @@ public:
     TokenStbi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::STBI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
-                  unsigned int &limit) override{
+                  unsigned int &limit) override {
         if (!isInDataSeg(limit, op2))
             throw PassTwoException("STB Op2 address not in data seg.");
     }
 
-    std::string label;
+};
+
+class TokenCmpr : public TokenInstr {
+public:
+    TokenCmpr(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::STBI) {}
+
+    void validate(std::map<std::string, unsigned int> &symbol_table,
+                  unsigned int &limit) override {
+        if (!isInDataSeg(limit, op2))
+            throw PassTwoException("STB Op2 address not in data seg.");
+    }
+
 };
 
 

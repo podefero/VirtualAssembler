@@ -148,6 +148,50 @@ public:
     }
 };
 
+class OperationBGT : public Operation {
+public:
+    OperationBGT(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        isValidCodeSeg(memory, getGReg(memory, operand2));
+    }
+
+    void execute(Memory &memory) override {
+        //branch to label if operand1 != 0
+        if (operand1 > 0)
+            setPC(memory, operand2);
+    }
+};
+
+class OperationBLT : public Operation {
+public:
+    OperationBLT(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        isValidCodeSeg(memory, getGReg(memory, operand2));
+    }
+
+    void execute(Memory &memory) override {
+        //branch to label if operand1 != 0
+        if (operand1 < 0)
+            setPC(memory, operand2);
+    }
+};
+
+class OperationBRZ : public Operation {
+public:
+    OperationBRZ(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        isValidCodeSeg(memory, getGReg(memory, operand2));
+    }
+
+    void execute(Memory &memory) override {
+        //branch to label if operand1 != 0
+        if (operand1 == 0)
+            setPC(memory, operand2);
+    }
+};
 class OperationLDB : public Operation {
 public:
     OperationLDB(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
@@ -161,6 +205,20 @@ public:
     }
 };
 
+class OperationLDBI : public Operation {
+public:
+    OperationLDBI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        isValidDataSeg(memory, getGReg(memory, operand2));
+    }
+
+    void execute(Memory &memory) override {
+        unsigned int offset = getGReg(memory, operand2);
+        setGReg(memory, operand1, memory.readByte(offset));
+    }
+};
+
 class OperationLDR : public Operation {
 public:
     OperationLDR(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
@@ -171,6 +229,33 @@ public:
 
     void execute(Memory &memory) override {
         setGReg(memory, operand1, memory.readInt(operand2));
+    }
+};
+
+class OperationLDRI : public Operation {
+public:
+    OperationLDRI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        isValidDataSeg(memory, getGReg(memory, operand2) + sizeof(int) - 1);
+    }
+
+    void execute(Memory &memory) override {
+        unsigned int offset = getGReg(memory, operand2);
+        setGReg(memory, operand1, memory.readInt(offset));
+    }
+};
+
+class OperationLDA : public Operation {
+public:
+    OperationLDA(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        isValidDataSeg(memory, operand2);
+    }
+
+    void execute(Memory &memory) override {
+        setGReg(memory, operand1, operand2);
     }
 };
 
@@ -232,6 +317,21 @@ public:
     }
 };
 
+class OperationSTBI : public Operation {
+public:
+    OperationSTBI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {};
+
+    void validate(Memory &memory) override {
+        isValidDataSeg(memory, getGReg(memory, operand2));
+    }
+
+    void execute(Memory &memory) override {
+        unsigned int rs = getGReg(memory, operand1);
+        unsigned int offset = getGReg(memory, operand2);
+        memory.writeByte(offset, static_cast<unsigned char>(rs & 0xFF));
+    }
+};
+
 class OperationSTR : public Operation {
 public:
     OperationSTR(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
@@ -243,6 +343,21 @@ public:
     void execute(Memory &memory) override {
         unsigned int rs = getGReg(memory, operand1);
         unsigned int offset = operand2;
+        memory.writeInt(offset, rs);
+    }
+};
+
+class OperationSTRI : public Operation {
+public:
+    OperationSTRI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        isValidDataSeg(memory, getGReg(memory, operand2));
+    }
+
+    void execute(Memory &memory) override {
+        unsigned int rs = getGReg(memory, operand1);
+        unsigned int offset = getGReg(memory, operand2);
         memory.writeInt(offset, rs);
     }
 };

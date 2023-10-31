@@ -419,3 +419,18 @@ TEST(AssemblyTest, ValidateLDB){
     EXPECT_EQ("0c0000000100000000000000", ldb_result);
     EXPECT_EQ("190000000200000001000000", ldbi_result);
 }
+
+TEST(BranchTest, TestBNZ) {
+    Assembly assembly;
+    // Data Segment
+    std::string label1 = "K .BYT 'K'";
+    // Code Segment
+    std::string label2 = "LOAD ADD R3 R1";
+    std::string branch = "BNZ R1 LOAD";
+
+    unsigned int data_seg = 4;
+    assembly.readToken(label1);
+    assembly.readToken(label2);
+    Token* brz = assembly.readToken(branch);
+    EXPECT_NO_THROW(brz->validate(assembly.symbol_table, data_seg));
+}
