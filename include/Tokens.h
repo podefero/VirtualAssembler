@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include "PassTwoException.h"
-
+#include "Opcodes.h"
 class Token {
 public:
     virtual ~Token() = default;
@@ -22,11 +22,7 @@ class TokenInstr : public Token {
 public:
     ~TokenInstr() override = default;
 
-    TokenInstr(unsigned int op1, unsigned int op2, unsigned int opcode) {
-        this->op1 = op1;
-        this->op2 = op2;
-        this->opcode = opcode;
-    }
+    TokenInstr(unsigned int op1, unsigned int op2, OpCode opCode): op1(op1), op2(op2), opCode(opCode) {}
 
     //if we are over data seg
     static bool isInCodeSeg(unsigned int &data_seg, unsigned int label_offset) {
@@ -47,6 +43,7 @@ public:
 
     std::vector<unsigned char> getBytes() override {
         std::vector<unsigned char> bytes;
+        auto opcode = static_cast<unsigned int>(opCode);
         bytes.push_back(static_cast<unsigned char>(opcode & 0xFF));
         bytes.push_back(static_cast<unsigned char>((opcode >> 8) & 0xFF));
         bytes.push_back(static_cast<unsigned char>((opcode >> 16) & 0xFF));
@@ -66,14 +63,14 @@ public:
     }
 
 protected:
-    unsigned int opcode;
+    OpCode opCode;
     unsigned int op1;
     unsigned int op2;
 };
 
 class TokenAdd : public TokenInstr {
 public:
-    TokenAdd(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 13) {}
+    TokenAdd(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::ADD) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {}
@@ -100,7 +97,7 @@ private:
 
 class TokenDiv : public TokenInstr {
 public:
-    TokenDiv(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 17) {}
+    TokenDiv(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::DIV) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {}
@@ -130,7 +127,7 @@ private:
 
 class TokenJmp : public TokenInstr {
 public:
-    TokenJmp(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 1) {}
+    TokenJmp(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::JMP) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &data_seg) override {
@@ -144,7 +141,7 @@ public:
 
 class TokenJmr : public TokenInstr {
 public:
-    TokenJmr(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 2) {}
+    TokenJmr(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::JMR) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &data_seg) override {
@@ -159,7 +156,7 @@ public:
 
 class TokenLdb : public TokenInstr {
 public:
-    TokenLdb(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 12) {}
+    TokenLdb(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::LDB) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -173,7 +170,7 @@ public:
 
 class TokenLdr : public TokenInstr {
 public:
-    TokenLdr(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 10) {}
+    TokenLdr(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::LDR) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -187,7 +184,7 @@ public:
 
 class TokenMove : public TokenInstr {
 public:
-    TokenMove(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 7) {}
+    TokenMove(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::MOV) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {}
@@ -195,7 +192,7 @@ public:
 
 class TokenMul : public TokenInstr {
 public:
-    TokenMul(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 16) {}
+    TokenMul(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::MUL) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {}
@@ -203,7 +200,7 @@ public:
 
 class TokenStb : public TokenInstr {
 public:
-    TokenStb(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 11) {}
+    TokenStb(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::STB) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -217,7 +214,7 @@ public:
 
 class TokenStr : public TokenInstr {
 public:
-    TokenStr(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 9) {}
+    TokenStr(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::STR) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -231,7 +228,7 @@ public:
 
 class TokenSub : public TokenInstr {
 public:
-    TokenSub(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 15) {}
+    TokenSub(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::SUB) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {}
@@ -239,7 +236,7 @@ public:
 
 class TokenTrap : public TokenInstr {
 public:
-    TokenTrap(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 21) {}
+    TokenTrap(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::TRAP) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {}
@@ -247,7 +244,7 @@ public:
 
 class TokenBgt : public TokenInstr {
 public:
-    TokenBgt(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 4) {}
+    TokenBgt(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::BGT) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -263,7 +260,7 @@ public:
 
 class TokenBlt : public TokenInstr {
 public:
-    TokenBlt(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 5) {}
+    TokenBlt(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::BLT) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -280,7 +277,7 @@ public:
 
 class TokenBnz : public TokenInstr {
 public:
-    TokenBnz(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 3) {}
+    TokenBnz(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::BNZ) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -297,7 +294,7 @@ public:
 
 class TokenBrz : public TokenInstr {
 public:
-    TokenBrz(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 6) {}
+    TokenBrz(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::BRZ) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override{
@@ -314,7 +311,7 @@ public:
 
 class TokenLda : public TokenInstr {
 public:
-    TokenLda(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 8) {}
+    TokenLda(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::LDA) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override {
@@ -331,7 +328,7 @@ public:
 
 class TokenLdbi : public TokenInstr {
 public:
-    TokenLdbi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 25) {}
+    TokenLdbi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::LDBI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override{
@@ -345,7 +342,7 @@ public:
 
 class TokenLdri : public TokenInstr {
 public:
-    TokenLdri(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 23) {}
+    TokenLdri(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::LDRI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override{
@@ -358,7 +355,7 @@ public:
 
 class TokenMovi : public TokenInstr {
 public:
-    TokenMovi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 31) {}
+    TokenMovi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::MOVI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override{}
@@ -368,7 +365,7 @@ public:
 
 class TokenStbi : public TokenInstr {
 public:
-    TokenStbi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, 24) {}
+    TokenStbi(unsigned int op1, unsigned int op2) : TokenInstr(op1, op2, OpCode::STBI) {}
 
     void validate(std::map<std::string, unsigned int> &symbol_table,
                   unsigned int &limit) override{

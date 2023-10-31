@@ -50,7 +50,8 @@ public:
     static void isValidCodeSeg(Memory &memory, int offset) {
         if (offset < memory.data_seg_end) {
             throw MemoryException(
-                    "Operation is in data segment space, must be in code segment space");
+                    "Operation is in data segment space, must be in code segment space. Offset " +
+                    std::to_string(offset));
         } // Check if we are out of code_seg space
         else if (offset > memory.code_seg_end) {
             throw MemoryException("Operation is out of memory space");
@@ -180,10 +181,27 @@ public:
     void validate(Memory &memory) override {}
 
     void execute(Memory &memory) override {
-        int rs = getGReg(memory, operand2);
-        setGReg(memory, operand1, rs);
+        //check if RS is PC
+        if (operand2 == 16) {
+            setGReg(memory, operand1, getPC(memory));
+        } else {
+            int rs = getGReg(memory, operand2);
+            setGReg(memory, operand1, rs);
+        }
     }
 };
+
+class OperationMOVI : public Operation {
+public:
+    OperationMOVI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        setGReg(memory, operand1, operand2);
+    }
+};
+
 
 class OperationMul : public Operation {
 public:
