@@ -5,8 +5,9 @@
 #include <iostream>
 #include <string>
 
-TEST(VM_TEST, MovePC) {
+TEST(OPTEST, MOV) {
     Memory memory;
+
     //set pc
     memory.registers.setRegister(Registers::PC, 25);
     //move pc to R1

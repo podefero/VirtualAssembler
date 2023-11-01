@@ -208,9 +208,9 @@ Token *Assembly::readToken(std::string &line) {
     return nullptr;
 }
 
-// create token. value can be op1 for instructions
-Token *Assembly::createToken(const std::string &item, const std::string &value,
-                             const std::string &op2) {
+// create token. arg1 can be op1 for instructions
+Token *Assembly::createToken(const std::string &item, const std::string &arg1,
+                             const std::string &arg2) {
     unsigned int instr_size = 12;
     Token *token = nullptr;
 
@@ -219,8 +219,8 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
 
         //.BYT
         offset += 1;
-        if (!value.empty()) {
-            token = new TokenByte(getImmediate(value));
+        if (!arg1.empty()) {
+            token = new TokenByte(getImmediate(arg1));
         } else
             token = new TokenByte('\0');
 
@@ -229,8 +229,8 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
         //.INT
         offset += 4;
         int immediate = 0;
-        if (!value.empty())
-            immediate = getImmediate(value);
+        if (!arg1.empty())
+            immediate = getImmediate(arg1);
         token = new TokenInt(immediate);
 
     } else if (item == ".STR") {
@@ -239,169 +239,188 @@ Token *Assembly::createToken(const std::string &item, const std::string &value,
 
         // ADD
         offset += instr_size;
-        int rd = getValidRegister(value);
-        int rs = getValidRegister(op2);
+        int rd = getValidRegister(arg1);
+        int rs = getValidRegister(arg2);
         token = new TokenInstr(rd, rs, OpCode::ADD);
 
     } else if (item == "SUB") {
 
         // SUB
         offset += instr_size;
-        int rd = getValidRegister(value);
-        int rs = getValidRegister(op2);
+        int rd = getValidRegister(arg1);
+        int rs = getValidRegister(arg2);
         token = new TokenInstr(rd, rs, OpCode::SUB);
 
     } else if (item == "DIV") {
 
         // DIV
         offset += instr_size;
-        int rd = getValidRegister(value);
-        int rs = getValidRegister(op2);
+        int rd = getValidRegister(arg1);
+        int rs = getValidRegister(arg2);
         token = new TokenInstr(rd, rs, OpCode::DIV);
 
     } else if (item == "MUL") {
 
         // MUL
         offset += instr_size;
-        int rd = getValidRegister(value);
-        int rs = getValidRegister(op2);
+        int rd = getValidRegister(arg1);
+        int rs = getValidRegister(arg2);
         token = new TokenInstr(rd, rs, OpCode::MUL);
 
     } else if (item == "MOV") {
 
         // MOV
         offset += instr_size;
-        int rd = getValidRegister(value);
-        int rs = getValidRegister(op2);
+        int rd = getValidRegister(arg1);
+        int rs = getValidRegister(arg2);
         token = new TokenInstr(rd, rs, OpCode::MOV);
 
     } else if (item == "MOVI") {
 
         //MOVI
         offset += instr_size;
-        int rd = getValidRegister(value);
-        token = new TokenInstr(rd, getImmediate(op2), OpCode::MOVI);
+        int rd = getValidRegister(arg1);
+        token = new TokenInstr(rd, getImmediate(arg2), OpCode::MOVI);
 
     } else if (item == "JMP") {
 
         // JMP
         offset += instr_size;
         token = new TokenInstr(0, 0, OpCode::JMP);
-        token->label = value;
+        token->label = arg1;
 
     } else if (item == "JMR") {
 
         //JMR
         offset += instr_size;
-        token = new TokenInstr(getValidRegister(value), 0, OpCode::JMR);
+        token = new TokenInstr(getValidRegister(arg1), 0, OpCode::JMR);
 
     } else if (item == "BNZ") {
 
         //BNZ
         offset += instr_size;
-        token = new TokenInstr(getValidRegister(value), 0, OpCode::BNZ);
-        token->label = op2;
+        token = new TokenInstr(getValidRegister(arg1), 0, OpCode::BNZ);
+        token->label = arg2;
 
     } else if (item == "BGT") {
 
         //BGT
         offset += instr_size;
-        token = new TokenInstr(getValidRegister(value), 0, OpCode::BGT);
-        token->label = op2;
+        token = new TokenInstr(getValidRegister(arg1), 0, OpCode::BGT);
+        token->label = arg2;
 
     } else if (item == "BLT") {
 
         //BLT
         offset += instr_size;
-        token = new TokenInstr(getValidRegister(value), 0, OpCode::BLT);
-        token->label = op2;
+        token = new TokenInstr(getValidRegister(arg1), 0, OpCode::BLT);
+        token->label = arg2;
 
     } else if (item == "BRZ") {
 
         //BRZ
         offset += instr_size;
-        token = new TokenInstr(getValidRegister(value), 0, OpCode::BRZ);
-        token->label = op2;
+        token = new TokenInstr(getValidRegister(arg1), 0, OpCode::BRZ);
+        token->label = arg2;
 
     } else if (item == "STR") {
 
         // STR
         offset += instr_size;
-        int rs = getValidRegister(value);
+        int rs = getValidRegister(arg1);
         token = new TokenInstr(rs, 0, OpCode::STR);
         token->inDataSeg = true;
-        token->label = op2;
+        token->label = arg2;
 
     } else if (item == "LDR") {
 
         // LDR or LDRI (indirect)
         offset += instr_size;
-        int rd = getValidRegister(value);
+        int rd = getValidRegister(arg1);
         int rg;
         try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
-            rg = getValidRegister(op2);
+            rg = getValidRegister(arg2);
             token = new TokenInstr(rd, rg, OpCode::LDRI);
         } catch (const PassOneException &ex) {
             token = new TokenInstr(rd, 0, OpCode::LDR);
-            token->label = op2;
+            token->label = arg2;
             token->inDataSeg = true;
         }
     } else if (item == "LDA") {
 
         //LDA
         offset += instr_size;
-        token = new TokenInstr(getValidRegister(value), 0, OpCode::LDA);
-        token->label = op2;
+        token = new TokenInstr(getValidRegister(arg1), 0, OpCode::LDA);
+        token->label = arg2;
         token->inDataSeg = true;
 
     } else if (item == "STB") {
 
         // STB or STBI (indirect)
         offset += instr_size;
-        int rd = getValidRegister(value);
+        int rd = getValidRegister(arg1);
         int rg;
         try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
-            rg = getValidRegister(op2);
+            rg = getValidRegister(arg2);
             token = new TokenInstr(rd, rg, OpCode::STBI);
         } catch (const PassOneException &ex) {
             token = new TokenInstr(rd, 0, OpCode::STB);
-            token->label = op2;
+            token->label = arg2;
             token->inDataSeg = true;
         }
     } else if (item == "LDB") {
 
         // LDB or LDBI (indirect)
         offset += instr_size;
-        int rd = getValidRegister(value);
+        int rd = getValidRegister(arg1);
         int rg;
         try {
             // if we have an valid rg then we use LDB RD RG, else LDB RD Label
-            rg = getValidRegister(op2);
+            rg = getValidRegister(arg2);
             token = new TokenInstr(rd, rg, OpCode::LDBI);
         } catch (const PassOneException &ex) {
             token = new TokenInstr(rd, 0, OpCode::LDB);
-            token->label = op2;
+            token->label = arg2;
             token->inDataSeg = true;
         }
+    } else if (item == "CMP") {
+
+        //CMP
+        offset += instr_size;
+        int rd = getValidRegister(arg1);
+        int rs = getValidRegister(arg2);
+        token = new TokenInstr(rd, rs, OpCode::CMP);
+
+    } else if (item == "CMPI") {
+
+        //CMP
+        offset += instr_size;
+        int rd = getValidRegister(arg1);
+        int immediate = getImmediate(arg2);
+        token = new TokenInstr(rd, immediate, OpCode::CMPI);
+
     } else if (item == "TRP") {
 
         // TRP
-        //  get the immediate value
-        //  based on that value return the right trap
-        int immediate = getImmediate(value);
+        offset += instr_size;
+
+        //  get the immediate arg1
+        //  based on that arg1 return the right trap
+        int immediate = getImmediate(arg1);
         // trap 0
         if (immediate == 0) {
             found_trap0 = true;
             token = new TokenInstr(immediate, 0, OpCode::TRAP);
         }
-            // set token if the trap is a valid value
+            // set token if the trap is a valid arg1
         else if (immediate > 0 && immediate <= 7)
             token = new TokenInstr(immediate, 0, OpCode::TRAP);
         else
-            throw PassOneException("Invalid TRP value " + std::to_string(immediate));
+            throw PassOneException("Invalid TRP arg1 " + std::to_string(immediate));
     }
+
 
     // if we have a valid token and if it's not a directive
     // then set the done_instruction flag

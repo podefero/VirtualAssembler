@@ -1,4 +1,4 @@
-# Project 2
+# Project 3
 
 ## Build Instructions
 
@@ -43,8 +43,11 @@ cd tests
 ./tests
 ```
 
-## Video Link
-
-You can watch a video related to this project by clicking on the following link:
-
-[Watch Video](https://drive.google.com/file/d/11tAhgiXCJ_F3gqOc40woM6_n_m6zLH2t/view?usp=sharing)
+## Change Log
+- Fixed TRP4 and TRP 2, swapped the logic on those instructions
+- Cleaned up redundant code. 
+- Tokens.h is more simplified 
+- Dump registers and symbol table on errors. 
+- Removed all .cpp files for operation and tokens. Combined in .h file.
+- Made code more readable, using enum for opcodes now. 
+- Added instructions from P3

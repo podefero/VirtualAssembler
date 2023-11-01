@@ -23,8 +23,8 @@ public:
 
     Token *readToken(std::string &line);
 
-    Token *createToken(const std::string& tokenType, const std::string& value,
-                        const std::string& op2);
+    Token *createToken(const std::string& tokenType, const std::string& arg1,
+                        const std::string& arg2);
 
     static int getValidRegister(const std::string &item);
 

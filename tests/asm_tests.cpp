@@ -420,17 +420,47 @@ TEST(AssemblyTest, ValidateLDB){
     EXPECT_EQ("190000000200000001000000", ldbi_result);
 }
 
-TEST(BranchTest, TestBNZ) {
+TEST(TokenTest, TestBNZ) {
+    //Testing BNZ with data_segment
+    //this is for tokens that resolve in code seg space
     Assembly assembly;
     // Data Segment
     std::string label1 = "K .BYT 'K'";
     // Code Segment
     std::string label2 = "LOAD ADD R3 R1";
     std::string branch = "BNZ R1 LOAD";
+    std::string invalid = "BNZ R1 K"; //cant use symbol in data seg
 
     unsigned int data_seg = 4;
     assembly.readToken(label1);
     assembly.readToken(label2);
     Token* brz = assembly.readToken(branch);
+    Token* brzInvalid = assembly.readToken(invalid);
+
     EXPECT_NO_THROW(brz->validate(assembly.symbol_table, data_seg));
+    EXPECT_THROW(brzInvalid->validate(assembly.symbol_table, data_seg), PassTwoException);
+    //LOAD symbol is now in data seg. (invalid assembly)
+    data_seg = 5;
+    EXPECT_THROW(brz->validate(assembly.symbol_table, data_seg), PassTwoException);
+}
+
+TEST(TokenTest, TestLDA) {
+    //Testing LDA with data_segment
+    //This is for tokens that only resolve in data seg space
+    Assembly assembly;
+    // Data Segment
+    std::string label1 = "K .BYT 'K'";
+    // Code Segment
+    std::string label2 = "LOAD ADD R3 R1";
+    std::string valid = "LDA R1 K";
+    std::string invalid = "LDA R1 LOAD"; //can't use symbol out of data seg
+
+    unsigned int data_seg = 4;
+    assembly.readToken(label1);
+    assembly.readToken(label2);
+    Token* ldaValid = assembly.readToken(valid);
+    Token* ldaInvalid = assembly.readToken(invalid);
+
+    EXPECT_NO_THROW(ldaValid->validate(assembly.symbol_table, data_seg));
+    EXPECT_THROW(ldaInvalid->validate(assembly.symbol_table, data_seg), PassTwoException);
 }

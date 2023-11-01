@@ -192,6 +192,47 @@ public:
             setPC(memory, operand2);
     }
 };
+
+class OperationCMP : public Operation {
+public:
+    OperationCMP(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        int rd = getGReg(memory, operand1);
+        int rs = getGReg(memory, operand2);
+        //compare
+        if (rd == rs) {
+            setGReg(memory, operand1, 0);
+        } else if (rd > rs) {
+            setGReg(memory, operand1, 1);
+        } else {
+            setGReg(memory, operand1, -1);
+        }
+    }
+};
+
+class OperationCMPI : public Operation {
+public:
+    OperationCMPI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        int rd = getGReg(memory, operand1);
+        int immediate = operand2;
+        //compare
+        if (rd == immediate) {
+            setGReg(memory, operand1, 0);
+        } else if (rd > immediate) {
+            setGReg(memory, operand1, 1);
+        } else {
+            setGReg(memory, operand1, -1);
+        }
+    }
+};
+
 class OperationLDB : public Operation {
 public:
     OperationLDB(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
@@ -401,9 +442,9 @@ public:
     }
 };
 
-class OperationTrap2 : public Operation {
+class OperationTrap4 : public Operation {
 public:
-    OperationTrap2(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+    OperationTrap4(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {}
 
@@ -430,9 +471,9 @@ public:
     }
 };
 
-class OperationTrap4 : public Operation {
+class OperationTrap2 : public Operation {
 public:
-    OperationTrap4(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+    OperationTrap2(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {}
 

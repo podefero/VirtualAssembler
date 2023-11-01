@@ -24,7 +24,7 @@ class TokenInstr : public Token {
 public:
     ~TokenInstr() override = default;
 
-    TokenInstr(unsigned int op1, unsigned int op2, OpCode opCode) : op1(op1), op2(op2), opCode(opCode) {}
+    TokenInstr(int op1, int op2, OpCode opCode) : op1(op1), op2(op2), opCode(opCode) {}
 
     //if we are over data seg
     static bool isInCodeSeg(unsigned int &data_seg, unsigned int label_offset) {
@@ -36,7 +36,7 @@ public:
     }
 
     static bool isInDataSeg(unsigned int &data_seg, unsigned int label_offset) {
-        if (label_offset < data_seg) {
+        if (label_offset <= data_seg) {
             return true;
         } else {
             return false;
@@ -52,7 +52,8 @@ public:
                 if (isInDataSeg(data_seg, label_offset)) {
                     op2 = label_offset;
                 } else {
-                    throw PassTwoException("Can't resolve label inDataSeg. label:" + label);
+                    throw PassTwoException("Can't resolve label inDataSeg:\nlabel:" + label + "\nOffset: " +
+                                           std::to_string(label_offset));
                 }
             } else {
                 //validation in code segment
@@ -64,7 +65,8 @@ public:
                         op2 = label_offset;
                     }
                 } else {
-                    throw PassTwoException("Can't resolve label inCodeSeg. label:" + label);
+                    throw PassTwoException("Can't resolve label inCodeSeg:\nlabel:" + label + "\nOffset: " +
+                                           std::to_string(label_offset));
                 }
             }
         }
@@ -93,8 +95,8 @@ public:
 
 protected:
     OpCode opCode;
-    unsigned int op1;
-    unsigned int op2;
+    int op1;
+    int op2;
 };
 
 class TokenByte : public Token {

@@ -21,6 +21,10 @@ public:
                 return new OperationBLT(opcode, op1, op2);
             case OpCode::BRZ:
                 return new OperationBRZ(opcode,op1,op2);
+            case OpCode::CMP:
+                return new OperationCMP(opcode,op1,op2);
+            case OpCode::CMPI:
+                return new OperationCMPI(opcode, op1, op2);
             case OpCode::MOV:
                 return new OperationMove(opcode, op1, op2);
             case OpCode::MOVI:
