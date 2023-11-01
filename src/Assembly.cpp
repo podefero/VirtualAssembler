@@ -243,7 +243,15 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
         int rs = getValidRegister(arg2);
         token = new TokenInstr(rd, rs, OpCode::ADD);
 
-    } else if (item == "SUB") {
+    } else if (item == "ADDI") {
+
+        // ADD
+        offset += instr_size;
+        int rd = getValidRegister(arg1);
+        int immediate = getImmediate(arg2);
+        token = new TokenInstr(rd, immediate, OpCode::ADDI);
+
+    }else if (item == "SUB") {
 
         // SUB
         offset += instr_size;

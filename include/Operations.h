@@ -93,6 +93,19 @@ public:
     }
 };
 
+class OperationAddI : public Operation {
+public:
+    OperationAddI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        int rd = getGReg(memory, operand1);
+        int result = rd + operand2;
+        setGReg(memory, operand1, result);
+    }
+};
+
 class OperationDiv : public Operation {
 public:
     OperationDiv(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
@@ -138,12 +151,12 @@ public:
     OperationBNZ(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {
-        isValidCodeSeg(memory, getGReg(memory, operand2));
+        isValidCodeSeg(memory, operand2);
     }
 
     void execute(Memory &memory) override {
         //branch to label if operand1 != 0
-        if (operand1 != 0)
+        if (getGReg(memory, operand1) != 0)
             setPC(memory, operand2);
     }
 };
@@ -153,12 +166,12 @@ public:
     OperationBGT(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {
-        isValidCodeSeg(memory, getGReg(memory, operand2));
+        isValidCodeSeg(memory, operand2);
     }
 
     void execute(Memory &memory) override {
-        //branch to label if operand1 != 0
-        if (operand1 > 0)
+        //branch to label if operand1 > 0
+        if (getGReg(memory, operand1) > 0)
             setPC(memory, operand2);
     }
 };
@@ -168,12 +181,12 @@ public:
     OperationBLT(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {
-        isValidCodeSeg(memory, getGReg(memory, operand2));
+        isValidCodeSeg(memory, operand2);
     }
 
     void execute(Memory &memory) override {
-        //branch to label if operand1 != 0
-        if (operand1 < 0)
+        //branch to label if operand1 < 0
+        if (getGReg(memory, operand1) < 0)
             setPC(memory, operand2);
     }
 };
@@ -183,7 +196,7 @@ public:
     OperationBRZ(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {
-        isValidCodeSeg(memory, getGReg(memory, operand2));
+        isValidCodeSeg(memory, operand2);
     }
 
     void execute(Memory &memory) override {

@@ -49,6 +49,8 @@ public:
                 return new OperationLDBI(opcode, op1, op2);
             case OpCode::ADD:
                 return new OperationAdd(opcode, op1, op2);
+            case OpCode::ADDI:
+                return new OperationAddI(opcode, op1, op2);
             case OpCode::SUB:
                 return new OperationSub(opcode, op1, op2);
             case OpCode::MUL:
