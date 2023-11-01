@@ -480,9 +480,25 @@ int Assembly::getImmediate(const std::string &item) {
                 return -2147483648;
             int value = std::stoi(item.substr(2), nullptr, 16);
             return value;
-        } else if (item[0] == '\'' && item[2] == '\'' && item.length() == 3) {
+        } else if (item[0] == '\'') {
+
             // check if it's a valid unsigned char
-            return static_cast<unsigned char>(item[1]);
+            if (item.length() == 3)
+                return static_cast<unsigned char>(item[1]);
+
+                //handle special characters
+            else if (item.length() == 4) {
+                if (item == "'\\n'") {
+                    // Handle newline character
+                    return static_cast<unsigned char>('\n');
+                } else if (item == "'\\t'") {
+                    // Handle tab character
+                    return static_cast<unsigned char>('\t');
+                } else {
+                    throw PassOneException("getImmediate(). Special sybmol no supported " + item);
+                }
+
+            }
         } else {
             throw PassOneException("getImmediate() failed to get value from item: " +
                                    item);

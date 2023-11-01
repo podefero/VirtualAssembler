@@ -50,4 +50,5 @@ cd tests
 - Dump registers and symbol table on errors. 
 - Removed all .cpp files for operation and tokens. Combined in .h file.
 - Made code more readable, using enum for opcodes now. 
+- Fixed .BYT Directives to now support special characters
 - Added instructions from P3
