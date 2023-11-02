@@ -26,7 +26,10 @@ void Assembly::readFile(const std::string &filePath) {
 
 // Reads in file, strips comments, reads tokens and builds symbol_table
 void Assembly::passOne(const std::string &filePath) {
-
+    outputFile = filePath;
+    outputFile[outputFile.size()-1] = 'n';
+    outputFile[outputFile.size()-2] = 'i';
+    outputFile[outputFile.size()-3] = 'b';
     size_t count = 0;
     size_t size = 0;
     try {
@@ -99,7 +102,7 @@ void Assembly::passTwo() {
 
     // write file
     //  Open the file in binary mode for writing
-    std::ofstream file("output.bin", std::ios::binary);
+    std::ofstream file(outputFile, std::ios::binary);
 
     // Check if the file was successfully opened
     if (file.is_open()) {

@@ -48,6 +48,7 @@ private:
     std::vector<Token *> tokens;
     bool done_instruction = false;
     bool found_trap0 = false;
+    std::string outputFile;
 };
 
 #endif
