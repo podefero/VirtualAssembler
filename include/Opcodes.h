@@ -1,5 +1,6 @@
 #ifndef OPCODES_H
 #define OPCODES_H
+
 enum class OpCode : int {
     MOV = 7,
     MOVI = 31,
@@ -36,5 +37,12 @@ enum class OpCode : int {
     BLT = 5,
     BRZ = 6
 
+};
+
+class OpcodeUtil {
+public :
+     static int getOpcode(OpCode opCode){
+        return static_cast<int>(opCode);
+}
 };
 #endif
