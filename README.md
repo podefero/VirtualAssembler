@@ -22,16 +22,21 @@ To run the main program, follow these steps:
 cd build
 ```
 2. Execute the main program with a file path as an argument:
-    - In this case for Project 2 use the HelloWord.asm as argument, below is instructions.
 
 ```bash
 ./main_prog <filePath>
+```
 
-#To run assembly portion using my Hellworld.asm
-./main_prog ../HelloWorld.asm #This will create a output.bin file
+```bash 
+#To run assembly portion for P3
+./main_prog ../asm/Project3_OddsEvens.asm
+./main_prog ../asm/Project3_DagsGads.asm
+```
 
+```bash
 #To run binary file
-./main_prog outputbin.bin
+./main_prog ../asm/Project3_OddsEvens.bin
+./main_prog ../asm/Project3_DagsGads.bin
 ```
 
 ## Running Tests
@@ -51,4 +56,6 @@ cd tests
 - Removed all .cpp files for operation and tokens. Combined in .h file.
 - Made code more readable, using enum for opcodes now. 
 - Fixed .BYT Directives to now support special characters
+- Simplified vm_tests.cpp. Due to the nature of exception handling it's a little backwards
+  - Will need to adjust so all exception throws will be handled by main.
 - Added instructions from P3
