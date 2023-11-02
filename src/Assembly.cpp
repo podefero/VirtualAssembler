@@ -130,10 +130,12 @@ Token *Assembly::readToken(std::string &line) {
     std::regex commaRegex(",");
     std::regex spaceRegex("\\s+");
     std::regex fspaceRegex("^\\s+"); // remove first space in line
+    std::regex emptyQuote("'\\s+'");
 
     line = std::regex_replace(line, commaRegex, " ");
     line = std::regex_replace(line, spaceRegex, " ");
     line = std::regex_replace(line, fspaceRegex, "");
+    line = std::regex_replace(line, emptyQuote, "'\\0'");
 
     std::stringstream ss(line);
     std::string item;
@@ -169,7 +171,9 @@ Token *Assembly::readToken(std::string &line) {
             }
 
             Token *token = nullptr;
-            std::string tokenType = split[index];
+            std::string tokenType;
+            tokenType = split[index];
+            //std::cout << size << std::endl;
             if (size == 1) {
                 token = createToken(tokenType, "", "");
             } else if (size == 2) {
@@ -196,6 +200,8 @@ Token *Assembly::readToken(std::string &line) {
 
             if (token != nullptr) {
                 return token;
+            } else if (size == 1) {
+                throw PassOneException("Bad token ");
             }
         }
     } // Failed to create token, catch and wrap into a new throw
@@ -204,7 +210,8 @@ Token *Assembly::readToken(std::string &line) {
     }
 
     // if we get to here then our tokens were not ordered right
-    throw (PassOneException("Tokens out of order or invalid " + line));
+    throw (PassOneException("Tokens out of order or invalid.\nLine: " + line
+                            + "\nSize: " + std::to_string(size)));
     return nullptr;
 }
 
@@ -251,7 +258,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
         int immediate = getImmediate(arg2);
         token = new TokenInstr(rd, immediate, OpCode::ADDI);
 
-    }else if (item == "SUB") {
+    } else if (item == "SUB") {
 
         // SUB
         offset += instr_size;
@@ -463,7 +470,7 @@ int Assembly::getValidRegister(const std::string &item) {
     if (item[0] == 'R') {
         registerNumber = std::stoi(item.substr(1));
         // check if in register range 0-15
-        if (registerNumber >= 0 && registerNumber <= 15) {
+        if (registerNumber >= 0 && registerNumber <= 16) {
             return (registerNumber);
         }
     }
@@ -491,19 +498,21 @@ int Assembly::getImmediate(const std::string &item) {
         } else if (item[0] == '\'') {
 
             // check if it's a valid unsigned char
-            if (item.length() == 3)
+            if (item.length() == 3) {
                 return static_cast<unsigned char>(item[1]);
-
+            } else if (item.length() == 4) {
                 //handle special characters
-            else if (item.length() == 4) {
                 if (item == "'\\n'") {
                     // Handle newline character
                     return static_cast<unsigned char>('\n');
                 } else if (item == "'\\t'") {
                     // Handle tab character
                     return static_cast<unsigned char>('\t');
+                } else if (item == "'\\0'") {
+                    //empty space
+                    return static_cast<unsigned char>(' ');
                 } else {
-                    throw PassOneException("getImmediate(). Special sybmol no supported " + item);
+                    throw PassOneException("getImmediate(). Special symbol no supported " + item);
                 }
 
             }

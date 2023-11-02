@@ -137,11 +137,11 @@ class OperationJMR : public Operation {
 public:
     OperationJMR(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
-    void validate(Memory &memory) override {
-        isValidCodeSeg(memory, getGReg(memory, operand1));
-    }
+    void validate(Memory &memory) override {}
 
     void execute(Memory &memory) override {
+        //have to validate here
+        isValidCodeSeg(memory, getGReg(memory, operand1));
         setPC(memory, getGReg(memory, operand1));
     }
 };
@@ -201,7 +201,7 @@ public:
 
     void execute(Memory &memory) override {
         //branch to label if operand1 != 0
-        if (operand1 == 0)
+        if (getGReg(memory, operand1) == 0)
             setPC(memory, operand2);
     }
 };
