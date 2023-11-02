@@ -14,10 +14,8 @@ int VirtualMachine::loadMemory(const std::string &filePath) {
     // handled here.
     try {
         memory.loadFromFile(filePath);
-        // std::cerr << filePath;
     } catch (const MemoryException &ex) {
-        std::cerr << ex.what();
-        return -1;
+        throw MemoryException(ex.what());
     }
     return 1;
 }
@@ -38,15 +36,19 @@ void VirtualMachine::initPc() {
 
 // fetch an instruction and set the instruction value and upate pc
 int VirtualMachine::fetch() {
-    int pc = memory.registers.getRegister(Registers::PC);
-    if (pc < memory.code_seg_start ||
-        pc > memory.code_seg_end) {
-        std::cerr << "PC out of range " << std::endl;
-        return -1;
-    }
     try {
+        int pc = memory.registers.getRegister(Registers::PC);
+        if (pc < memory.code_seg_start) {
+            throw MemoryException("PC is in Data Segment");
+        }
+
         current_instruction = memory.readInstruction(pc);
         memory.registers.setRegister(Registers::PC, pc + sizeof(Memory::Instruction));
+        //update pc
+        pc = memory.registers.getRegister(Registers::PC);
+        if (pc > memory.code_seg_end) {
+            throw MemoryException("PC is after Code Segment");
+        }
     } catch (const MemoryException &ex) {
         memory.registers.dumpRegisters();
         std::cerr << ex.what() << std::endl;
