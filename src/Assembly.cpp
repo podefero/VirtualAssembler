@@ -115,7 +115,7 @@ void Assembly::passTwo() {
 }
 
 void Assembly::stripComments() {
-    std::regex commentRegex("(^;.*)|( ;.*)|(\\s+$)");
+    std::regex commentRegex("(^;.*)|( ;.*)|(\\s+$)|(^\\s+)");
     for (std::string &line: file_buffer) {
         line = std::regex_replace(line, commentRegex, "");
     }
@@ -342,11 +342,16 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
 
         // STR
         offset += instr_size;
-        int rs = getValidRegister(arg1);
-        token = new TokenInstr(rs, 0, OpCode::STR);
-        token->inDataSeg = true;
-        token->label = arg2;
-
+        int rd = getValidRegister(arg1);
+        int rg;
+        try {
+            rg = getValidRegister(arg2);
+            token = new TokenInstr(rd, rg, OpCode::STRI);
+        } catch (const PassOneException &ex) {
+            token = new TokenInstr(rd, 0, OpCode::STR);
+            token->label = arg2;
+            token->inDataSeg = true;
+        }
     } else if (item == "LDR") {
 
         // LDR or LDRI (indirect)
