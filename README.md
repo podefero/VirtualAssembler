@@ -50,6 +50,7 @@ cd tests
 
 ## Change Log
 - Fixed TRP4 and TRP 2, swapped the logic on those instructions
+- Fixed bug where asm file would throw error on comment line with white space before it.
 - Cleaned up redundant code. 
 - Tokens.h is more simplified 
 - Dump registers and symbol table on errors. 

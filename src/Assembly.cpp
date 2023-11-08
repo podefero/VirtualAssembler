@@ -118,8 +118,10 @@ void Assembly::passTwo() {
 }
 
 void Assembly::stripComments() {
-    std::regex commentRegex("(^;.*)|( ;.*)|(\\s+$)|(^\\s+)");
+    std::regex whiteSpace("^\\s+");
+    std::regex commentRegex("(^;.*)|( ;.*)|(\\s+$)");
     for (std::string &line: file_buffer) {
+        line = std::regex_replace(line, whiteSpace, "");
         line = std::regex_replace(line, commentRegex, "");
     }
 }

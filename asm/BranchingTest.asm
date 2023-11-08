@@ -4,7 +4,7 @@
 ;Instructions used
 ;TRP 0-3, STR, LDB, MOVI, MOV, CMP, BGT, BLT, BRZ, JMP, ADDI
 
-;directive space
+    ;directive space
 INPUT .INT #0 ;set user input
 NEWL .BYT '\n' ;new line
 
