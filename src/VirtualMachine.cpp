@@ -132,6 +132,7 @@ unsigned int VirtualMachine::findTrap0() {
             std::cerr << "No trap0 -> " << ex.what();
             return 1;
         }
+        // add 12
         offset += sizeof(Memory::Instruction);
         if (trap0.opcode == instruct.opcode &&
             trap0.operand1 == instruct.operand1) {
@@ -139,6 +140,18 @@ unsigned int VirtualMachine::findTrap0() {
             return offset;
         }
     }
+}
+
+void VirtualMachine::setStackPointers(unsigned int limit) {
+    unsigned int stack_top = limit + 4;
+    memory.registers.setRegister(Registers::SL, stack_top);
+
+    unsigned int stack_bot = stack_top + Memory::stack_size;
+    memory.registers.setRegister(Registers::SB, stack_bot);
+
+    memory.registers.setRegister(Registers::SP, stack_bot - 4);
+
+    memory.registers.setRegister(Registers::FP, stack_bot);
 }
 
 // getters
