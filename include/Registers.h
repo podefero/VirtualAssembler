@@ -5,12 +5,17 @@
 
 class Registers {
 private:
-    static const int NUM_REGISTERS = 17;
+    static const int NUM_REGISTERS = 22;
     int registers[NUM_REGISTERS]{};
 
 public:
     static const int NUM_RG = 15; //0 - 15
     static const int PC = 16;
+    static const int SL = 17;
+    static const int SB = 18;
+    static const int SP = 19;
+    static const int FP = 20;
+    static const int HP = 21;
 
     Registers() {
         for (int & i : registers) {

@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
       if (result == 1) {
         vm.initPc();
         int memory_size = vm.findTrap0();
-
+        vm.setStackPointers(memory_size);
         if (memory_size == 1)
           return 1;
 

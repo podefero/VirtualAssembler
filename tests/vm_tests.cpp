@@ -97,3 +97,18 @@ TEST(MEMTEST, ReadWriteInstruction) {
     EXPECT_THROW(memory.readInstruction(Memory::size), MemoryException);
     EXPECT_THROW(memory.writeInstruction(Memory::size, instruction), MemoryException);
 }
+
+TEST(STACK_REG_TEST, CheckStackPointers) {
+    VirtualMachine vm;
+    //define data and code segs
+    vm.memory.data_seg_end = 12;
+    vm.memory.data_seg_start = 13;
+    vm.memory.data_seg_end = 1024;
+    vm.setStackPointers(vm.memory.data_seg_end);
+    //SL Points to next byte after Code Segment  (top) at runtime
+    EXPECT_EQ(1028, vm.memory.registers.getRegister(Registers::SL));
+    //SB Points next byte after size (base) at runtime
+    EXPECT_EQ(2052, vm.memory.registers.getRegister(Registers::SB));
+    EXPECT_EQ(2052, vm.memory.registers.getRegister(Registers::FP));
+    EXPECT_EQ(2048, vm.memory.registers.getRegister(Registers::SP));
+}

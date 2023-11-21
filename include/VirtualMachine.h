@@ -27,6 +27,8 @@ public:
 
     unsigned int findTrap0();
 
+    void setStackPointers(unsigned int limit);
+
     Memory::Instruction getInstruction();
 
 private:

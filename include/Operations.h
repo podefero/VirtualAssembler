@@ -47,6 +47,49 @@ public:
         return memory.registers.getRegister(Registers::PC);
     }
 
+    //other registers (SP,FP..)
+    static unsigned int getSL() {
+        //top of stack
+        //this is set by vm during runtime
+        return 0;
+    }
+    static unsigned int getSB() {
+        //bottom of stack
+        //set at runtime by vm
+        return 0;
+    }
+
+    static void setSP() {
+        //move will use this
+        //check if it sets above or below limits
+    }
+
+    static unsigned int getSP() {
+        //stack pointer, points at next free stack frame
+        return 0;
+    }
+
+    static void setFP() {
+        //move will use this
+        //check if it sets above SP
+        //check if set below limit
+
+    }
+
+    static unsigned int getFP() {
+        //points at return address of current activation record on the stack
+        return 0;
+    }
+
+    //undefined until P5
+    static void setHP() {
+
+    }
+
+    static unsigned int getHP() {
+        return 0;
+    }
+
     static void isValidCodeSeg(Memory &memory, int offset) {
         if (offset < memory.data_seg_end) {
             throw MemoryException(
