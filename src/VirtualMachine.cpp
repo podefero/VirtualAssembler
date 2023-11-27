@@ -151,7 +151,7 @@ void VirtualMachine::setStackPointers(unsigned int limit) {
 
     memory.registers.setRegister(Registers::SP, stack_bot - 4);
 
-    memory.registers.setRegister(Registers::FP, stack_bot);
+    memory.registers.setRegister(Registers::FP, stack_bot - 4);
 }
 
 // getters
