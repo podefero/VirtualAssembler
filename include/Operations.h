@@ -48,25 +48,30 @@ public:
     }
 
     //other registers (SP,FP..)
-    static unsigned int getSL() {
+    static unsigned int getSL(Memory &memory) {
         //top of stack
         //this is set by vm during runtime
-        return 0;
+        return memory.registers.getRegister(Registers::SL);
     }
-    static unsigned int getSB() {
+
+    static unsigned int getSB(Memory &memory) {
         //bottom of stack
         //set at runtime by vm
-        return 0;
+        return memory.registers.getRegister(Registers::SB);
     }
 
-    static void setSP() {
+    static void setSP(Memory &memory, int offset) {
         //move will use this
         //check if it sets above or below limits
+//        if (offset < getSL(memory) || offset > getSB(memory)) {
+//            throw MemoryException("SP can't be set outside of SL or SB");
+//        }
+        memory.registers.setRegister(Registers::SP, offset);
     }
 
-    static unsigned int getSP() {
+    static unsigned int getSP(Memory &memory) {
         //stack pointer, points at next free stack frame
-        return 0;
+        return memory.registers.getRegister(Registers::SP);
     }
 
     static void setFP() {
@@ -472,6 +477,95 @@ public:
         setGReg(memory, operand1, result);
     }
 };
+
+class OperationAND : public Operation {
+public:
+    OperationAND(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        int rd = getGReg(memory, operand1);
+        int rs = getGReg(memory, operand2);
+        if (rd == 1 && rs == 1) {
+            setGReg(memory, operand1, 1);
+        } else {
+            setGReg(memory, operand1, 0);
+        }
+    }
+};
+
+class OperationOR : public Operation {
+public:
+    OperationOR(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        int rd = getGReg(memory, operand1);
+        int rs = getGReg(memory, operand2);
+        if (rd == 1 || rs == 1) {
+            setGReg(memory, operand1, 1);
+        } else {
+            setGReg(memory, operand1, 0);
+        }
+    }
+};
+
+class OperationNOT : public Operation {
+public:
+    OperationNOT(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        int rd = getGReg(memory, operand1);
+        int rs = getGReg(memory, operand2);
+        if (!(rd == 1 || rs == 1)) {
+            setGReg(memory, operand1, 1);
+        } else {
+            setGReg(memory, operand1, 0);
+        }
+    }
+};
+
+class OperationPUSH : public Operation {
+public:
+    OperationPUSH(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        if (getSP(memory) < getSL(memory)) {
+            throw MemoryException("Stack Overflow - Can't push value : " + std::to_string(operand1));
+        }
+
+    }
+
+    void execute(Memory &memory) override {
+        int sp = getSP(memory);
+        int rg = getGReg(memory, operand1);
+        memory.writeInt(sp, rg);
+        setSP(memory, sp - 4);
+    }
+};
+
+class OperationPOP : public Operation {
+public:
+    OperationPOP(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+        if (getSP(memory) >= getSB(memory)) {
+            throw MemoryException("Stack Underflow");
+        }
+    }
+
+    void execute(Memory &memory) override {
+        int sp = getSP(memory) + 4;
+        int value = memory.readInt(sp);
+        setGReg(memory, operand1, value);
+        setSP(memory, sp);
+    }
+};
+
 
 class OperationTrap0 : public Operation {
 public:

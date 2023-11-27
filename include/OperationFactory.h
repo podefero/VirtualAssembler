@@ -57,6 +57,12 @@ public:
                 return new OperationMul(opcode, op1, op2);
             case OpCode::DIV:
                 return new OperationDiv(opcode, op1, op2);
+            case OpCode::AND:
+                return new OperationAND(opcode, op1, op2);
+            case OpCode::OR:
+                return new OperationOR(opcode, op1, op2);
+            case OpCode::NOT:
+                return new OperationNOT(opcode, op1, op2);
             case OpCode::TRAP:
                 switch (op1) {
                     case 0:

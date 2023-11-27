@@ -88,7 +88,7 @@ TEST(MEMTEST, ReadWriteByte) {
 
 TEST(MEMTEST, ReadWriteInstruction) {
     Memory memory;
-    Memory::Instruction instruction {1, 2, 3};
+    Memory::Instruction instruction{1, 2, 3};
     memory.writeInstruction(0, instruction);
     Memory::Instruction result = memory.readInstruction(0);
     EXPECT_EQ(instruction.opcode, result.opcode);
@@ -102,13 +102,136 @@ TEST(STACK_REG_TEST, CheckStackPointers) {
     VirtualMachine vm;
     //define data and code segs
     vm.memory.data_seg_end = 12;
-    vm.memory.data_seg_start = 13;
-    vm.memory.data_seg_end = 1024;
-    vm.setStackPointers(vm.memory.data_seg_end);
+    vm.memory.code_seg_start = 13;
+    vm.memory.code_seg_end = 1024;
+    vm.setStackPointers(vm.memory.code_seg_end);
     //SL Points to next byte after Code Segment  (top) at runtime
     EXPECT_EQ(1028, vm.memory.registers.getRegister(Registers::SL));
     //SB Points next byte after size (base) at runtime
     EXPECT_EQ(2052, vm.memory.registers.getRegister(Registers::SB));
     EXPECT_EQ(2052, vm.memory.registers.getRegister(Registers::FP));
     EXPECT_EQ(2048, vm.memory.registers.getRegister(Registers::SP));
+}
+
+TEST(LOGICTEST, AndLogic) {
+    Memory memory;
+    memory.registers.setRegister(0, 1);
+    memory.registers.setRegister(1, 1);
+    memory.registers.setRegister(4, 66);
+    OperationAND opTrue(OpcodeUtil::getOpcode(OpCode::AND), 0, 1);
+    OperationAND opFalse(OpcodeUtil::getOpcode(OpCode::AND), 1, 4);
+
+    opTrue.execute(memory); //r0 should be 1
+    opFalse.execute(memory); //r1 should be 0
+
+    EXPECT_EQ(1, memory.registers.getRegister(0));
+    EXPECT_EQ(0, memory.registers.getRegister(1));
+
+}
+
+TEST(LOGICTEST, OrLogic) {
+    Memory memory;
+    memory.registers.setRegister(0, 1);
+    memory.registers.setRegister(1, 0);
+    memory.registers.setRegister(2, 0);
+    OperationOR opTrue(OpcodeUtil::getOpcode(OpCode::OR), 0, 1);
+    OperationOR opFalse(OpcodeUtil::getOpcode(OpCode::OR), 1, 2);
+
+    opTrue.execute(memory); //r0 should be 1
+    opFalse.execute(memory); //r1 should be 0
+
+    EXPECT_EQ(1, memory.registers.getRegister(0));
+    EXPECT_EQ(0, memory.registers.getRegister(1));
+
+}
+
+TEST(LOGICTEST, NotLogic) {
+    Memory memory;
+    memory.registers.setRegister(0, 1);
+    memory.registers.setRegister(1, 0);
+    memory.registers.setRegister(2, 0);
+    OperationOR opTrue(OpcodeUtil::getOpcode(OpCode::OR), 0, 1);
+    OperationOR opFalse(OpcodeUtil::getOpcode(OpCode::OR), 1, 2);
+
+    opTrue.execute(memory); //r0 should be 1
+    opFalse.execute(memory); //r1 should be 0
+
+    EXPECT_EQ(1, memory.registers.getRegister(0));
+    EXPECT_EQ(0, memory.registers.getRegister(1));
+}
+
+TEST(SPTEST, PUSH) {
+    VirtualMachine vm;
+    //define data and code segs
+    vm.memory.data_seg_end = 12;
+    vm.memory.code_seg_start = 13;
+    vm.memory.code_seg_end = 1024;
+    vm.setStackPointers(vm.memory.code_seg_end);
+
+    vm.memory.registers.setRegister(0, 10);
+    //push the value of r0 onto stack
+    OperationPUSH op(OpcodeUtil::getOpcode(OpCode::PUSH), 0, 0);
+    op.execute(vm.memory);
+    int expectValue = vm.memory.readInt(vm.memory.registers.getRegister(Registers::SP) + 4); //peek
+    EXPECT_EQ(10, expectValue);
+}
+
+TEST(SPTEST, PUSH_OverFlow) {
+    VirtualMachine vm;
+    //define data and code segs
+    vm.memory.data_seg_end = 12;
+    vm.memory.code_seg_start = 13;
+    vm.memory.code_seg_end = 1024;
+    vm.setStackPointers(vm.memory.code_seg_end);
+
+    vm.memory.registers.setRegister(0, 10);
+
+    //set sp to sl
+    int stack_limit = vm.memory.registers.getRegister(Registers::SL);
+    vm.memory.registers.setRegister(Registers::SP, stack_limit);
+
+    //push the value of r0 onto stack
+    OperationPUSH op(OpcodeUtil::getOpcode(OpCode::PUSH), 0, 0);
+    op.execute(vm.memory); // we are now in overflow
+
+    //typically I would validate first then execute, but in this case
+    // I executed first to move SP above SL, then validated we are out of the stack
+    EXPECT_THROW(op.validate(vm.memory), MemoryException);
+}
+
+TEST(SPTEST, POP) {
+    VirtualMachine vm;
+    //define data and code segs
+    vm.memory.data_seg_end = 12;
+    vm.memory.code_seg_start = 13;
+    vm.memory.code_seg_end = 1024;
+    vm.setStackPointers(vm.memory.code_seg_end);
+
+    vm.memory.registers.setRegister(0, 10);
+
+    //push the value of r0 onto stack
+    OperationPUSH op(OpcodeUtil::getOpcode(OpCode::PUSH), 0, 0);
+    op.execute(vm.memory);
+
+    OperationPOP pop(OpcodeUtil::getOpcode(OpCode::POP), 1, 0); //load value in r1
+    pop.execute(vm.memory);
+    int expectValue = vm.memory.registers.getRegister(1);
+    EXPECT_EQ(10, expectValue);
+}
+
+TEST(SPTEST, POP_UnderFlow) {
+    VirtualMachine vm;
+    //define data and code segs
+    vm.memory.data_seg_end = 12;
+    vm.memory.code_seg_start = 13;
+    vm.memory.code_seg_end = 1024;
+    vm.setStackPointers(vm.memory.code_seg_end);
+
+    //pop value, sp should be at sb now
+    OperationPOP op(OpcodeUtil::getOpcode(OpCode::POP), 0, 0);
+    op.execute(vm.memory);
+
+    //typically I would validate first then execute, but in this case
+    // I executed first to move SP at SB, then validated we are out of the stack
+    EXPECT_THROW(op.validate(vm.memory), MemoryException);
 }
