@@ -20,9 +20,9 @@ public:
             case OpCode::BLT:
                 return new OperationBLT(opcode, op1, op2);
             case OpCode::BRZ:
-                return new OperationBRZ(opcode,op1,op2);
+                return new OperationBRZ(opcode, op1, op2);
             case OpCode::CMP:
-                return new OperationCMP(opcode,op1,op2);
+                return new OperationCMP(opcode, op1, op2);
             case OpCode::CMPI:
                 return new OperationCMPI(opcode, op1, op2);
             case OpCode::MOV:
@@ -30,7 +30,7 @@ public:
             case OpCode::MOVI:
                 return new OperationMOVI(opcode, op1, op2);
             case OpCode::LDA:
-                return new OperationLDA(opcode,op1,op2);
+                return new OperationLDA(opcode, op1, op2);
             case OpCode::STR:
                 return new OperationSTR(opcode, op1, op2);
             case OpCode::STRI:
@@ -63,6 +63,10 @@ public:
                 return new OperationOR(opcode, op1, op2);
             case OpCode::NOT:
                 return new OperationNOT(opcode, op1, op2);
+            case OpCode::PUSH:
+                return new OperationPUSH(opcode, op1, op2);
+            case OpCode::POP:
+                return new OperationPOP(opcode, op1, op2);
             case OpCode::TRAP:
                 switch (op1) {
                     case 0:

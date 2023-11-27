@@ -109,7 +109,7 @@ TEST(STACK_REG_TEST, CheckStackPointers) {
     EXPECT_EQ(1028, vm.memory.registers.getRegister(Registers::SL));
     //SB Points next byte after size (base) at runtime
     EXPECT_EQ(2052, vm.memory.registers.getRegister(Registers::SB));
-    EXPECT_EQ(2052, vm.memory.registers.getRegister(Registers::FP));
+    EXPECT_EQ(2048, vm.memory.registers.getRegister(Registers::FP));
     EXPECT_EQ(2048, vm.memory.registers.getRegister(Registers::SP));
 }
 
@@ -192,6 +192,7 @@ TEST(SPTEST, PUSH_OverFlow) {
 
     //push the value of r0 onto stack
     OperationPUSH op(OpcodeUtil::getOpcode(OpCode::PUSH), 0, 0);
+    op.validate(vm.memory);
     op.execute(vm.memory); // we are now in overflow
 
     //typically I would validate first then execute, but in this case
@@ -229,9 +230,33 @@ TEST(SPTEST, POP_UnderFlow) {
 
     //pop value, sp should be at sb now
     OperationPOP op(OpcodeUtil::getOpcode(OpCode::POP), 0, 0);
+    op.validate(vm.memory); //should be fine here
     op.execute(vm.memory);
 
     //typically I would validate first then execute, but in this case
     // I executed first to move SP at SB, then validated we are out of the stack
     EXPECT_THROW(op.validate(vm.memory), MemoryException);
+}
+
+TEST(FPTest, FirstActivationRec) {
+    VirtualMachine vm;
+    vm.memory.data_seg_end = 12;
+    vm.memory.code_seg_start = 13;
+    vm.memory.code_seg_end = 1024;
+    vm.setStackPointers(vm.memory.code_seg_end);
+    int fp = vm.memory.registers.getRegister(Registers::FP);
+    int sp = vm.memory.registers.getRegister(Registers::SP);
+    //they should point to same address
+    EXPECT_EQ(fp, sp);
+    //push return address, pfp, function param
+    OperationPUSH ra(OpcodeUtil::getOpcode(OpCode::PUSH), 0, 0);
+    OperationPUSH pfp(OpcodeUtil::getOpcode(OpCode::PUSH), 0, 0);
+    OperationPUSH param(OpcodeUtil::getOpcode(OpCode::PUSH), 0, 0);
+    //pushed 12 bytes on stack
+    ra.execute(vm.memory);
+    pfp.execute(vm.memory);
+    param.execute(vm.memory);
+    int sp_new = vm.memory.registers.getRegister(Registers::SP);
+    int result = sp - sp_new;
+    EXPECT_EQ(12, result);
 }
