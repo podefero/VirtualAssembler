@@ -27,9 +27,9 @@ void Assembly::readFile(const std::string &filePath) {
 // Reads in file, strips comments, reads tokens and builds symbol_table
 void Assembly::passOne(const std::string &filePath) {
     outputFile = filePath;
-    outputFile[outputFile.size()-1] = 'n';
-    outputFile[outputFile.size()-2] = 'i';
-    outputFile[outputFile.size()-3] = 'b';
+    outputFile[outputFile.size() - 1] = 'n';
+    outputFile[outputFile.size() - 2] = 'i';
+    outputFile[outputFile.size() - 3] = 'b';
     size_t count = 0;
     size_t size = 0;
     try {
@@ -423,6 +423,34 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
         int rd = getValidRegister(arg1);
         int immediate = getImmediate(arg2);
         token = new TokenInstr(rd, immediate, OpCode::CMPI);
+
+    } else if (item == "AND" || item == "OR" || item == "NOT") {
+
+        //AND,OR,NOT
+        offset += instr_size;
+        int rd = getValidRegister(arg1);
+        int rs = getValidRegister(arg2);
+        OpCode opCode;
+        if (item == "AND")
+            opCode = OpCode::AND;
+        else if (item == "OR")
+            opCode = OpCode::OR;
+        else
+            opCode = OpCode::NOT;
+        token = new TokenInstr(rd, rs, opCode);
+
+    } else if (item == "PUSH" || item == "POP") {
+
+        offset += instr_size;
+        //PUSH POP
+        int rg = getValidRegister(arg1);
+        OpCode opCode;
+        if (item == "PUSH") {
+            opCode = OpCode::PUSH;
+        } else {
+            opCode = OpCode::POP;
+        }
+        token = new TokenInstr(rg, 0, opCode);
 
     } else if (item == "TRP") {
 
