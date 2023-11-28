@@ -129,8 +129,7 @@ unsigned int VirtualMachine::findTrap0() {
         try {
             instruct = memory.readInstruction(offset);
         } catch (const MemoryException &ex) {
-            std::cerr << "No trap0 -> " << ex.what();
-            return 1;
+            throw MemoryException(std::string("Trap0 not found ") + ex.what());
         }
         // add 12
         offset += sizeof(Memory::Instruction);
@@ -140,6 +139,7 @@ unsigned int VirtualMachine::findTrap0() {
             return offset;
         }
     }
+    return 1;
 }
 
 void VirtualMachine::setStackPointers(unsigned int limit) {
