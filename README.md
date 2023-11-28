@@ -1,4 +1,4 @@
-# Project 3
+# Project 4
 
 ## Build Instructions
 
@@ -49,13 +49,5 @@ cd tests
 ```
 
 ## Change Log
-- Fixed TRP4 and TRP 2, swapped the logic on those instructions
-- Cleaned up redundant code. 
-- Tokens.h is more simplified 
-- Dump registers and symbol table on errors. 
-- Removed all .cpp files for operation and tokens. Combined in .h file.
-- Made code more readable, using enum for opcodes now. 
-- Fixed .BYT Directives to now support special characters
-- Simplified vm_tests.cpp. Due to the nature of exception handling it's a little backwards
-  - Will need to adjust so all exception throws will be handled by main.
-- Added instructions from P3
+- Added Instructions for P4
+- Have an integration test to test .asm files
