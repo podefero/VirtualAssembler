@@ -83,10 +83,20 @@ TEST_F(Integrated, InvalidTrap0) {
     RunAssembly(true);
 }
 
-//same as above, making sure my tests work
+//making sure my tests work
 TEST_F(Integrated, ValidTrap0) {
     asmFile = "../../asm/test/valid/we.asm";
     binFile = "../../asm/test/valid/we.bin";
     RunAssembly(false);
     RunVm(false);
 }
+
+//AddFunction.asm
+//Call the function twice with different params, outputs the result each time
+TEST_F(Integrated, AddFunctionASM) {
+    asmFile = "../../asm/test/valid/AddFunction.asm";
+    binFile = "../../asm/test/valid/AddFunction.bin";
+    RunAssembly(false);
+    RunVm(false);
+}
+

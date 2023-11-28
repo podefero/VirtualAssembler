@@ -28,6 +28,8 @@ public:
 
     static int getValidRegister(const std::string &item);
 
+    static int getSpecialRegister(const std::string &item);
+
     static int getImmediate(const std::string &item);
 
     unsigned int getSymbol(const std::string& key);

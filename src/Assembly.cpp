@@ -291,8 +291,8 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
 
         // MOV
         offset += instr_size;
-        int rd = getValidRegister(arg1);
-        int rs = getValidRegister(arg2);
+        int rd = getSpecialRegister(arg1);
+        int rs = getSpecialRegister(arg2);
         token = new TokenInstr(rd, rs, OpCode::MOV);
 
     } else if (item == "MOVI") {
@@ -507,13 +507,27 @@ int Assembly::getValidRegister(const std::string &item) {
     int registerNumber = 0;
     if (item[0] == 'R') {
         registerNumber = std::stoi(item.substr(1));
-        // check if in register range 0-15
-        if (registerNumber >= 0 && registerNumber <= 16) {
+        if (registerNumber >= 0 && registerNumber <= 15) {
             return (registerNumber);
         }
     }
 
     throw PassOneException("Invalid Register value " +
+                           std::to_string(registerNumber));
+    return -1;
+}
+
+//same as getValidRegister but includes the others
+int Assembly::getSpecialRegister(const std::string &item) {
+    int registerNumber = 0;
+    if (item[0] == 'R') {
+        registerNumber = std::stoi(item.substr(1));
+        if (registerNumber >= 0 && registerNumber <= 21) {
+            return (registerNumber);
+        }
+    }
+
+    throw PassOneException("Invalid Special Register value " +
                            std::to_string(registerNumber));
     return -1;
 }

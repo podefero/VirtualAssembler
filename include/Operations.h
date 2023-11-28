@@ -368,13 +368,8 @@ public:
     void validate(Memory &memory) override {}
 
     void execute(Memory &memory) override {
-        //check if RS is PC
-        if (operand2 == 16) {
-            setGReg(memory, operand1, getPC(memory));
-        } else {
-            int rs = getGReg(memory, operand2);
-            setGReg(memory, operand1, rs);
-        }
+        int rs = memory.registers.getRegister(operand2);
+        memory.registers.setRegister(operand1, rs);
     }
 };
 
