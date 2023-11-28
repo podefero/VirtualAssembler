@@ -33,3 +33,19 @@ add_custom_target(run_tests
     DEPENDS tests
 )
 
+add_executable(integratedTest integrated_test.cpp ${SOURCES})
+
+target_include_directories(integratedTest PRIVATE ../include)
+
+target_link_libraries(
+        integratedTest
+        GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(integratedTest)
+
+add_custom_target(run_integrated_tests
+        COMMAND integratedTest
+        DEPENDS integratedTest
+)
