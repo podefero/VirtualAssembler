@@ -67,6 +67,8 @@ public:
                 return new OperationPUSH(opcode, op1, op2);
             case OpCode::POP:
                 return new OperationPOP(opcode, op1, op2);
+            case OpCode::PEEK:
+                return new OperationPEEK(opcode, op1, op2);
             case OpCode::TRAP:
                 switch (op1) {
                     case 0:

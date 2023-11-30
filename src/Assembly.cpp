@@ -441,7 +441,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
             opCode = OpCode::NOT;
         token = new TokenInstr(rd, rs, opCode);
 
-    } else if (item == "PUSH" || item == "POP") {
+    } else if (item == "PUSH" || item == "POP" || item == "PEEK") {
 
         offset += instr_size;
         //PUSH POP
@@ -449,8 +449,10 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
         OpCode opCode;
         if (item == "PUSH") {
             opCode = OpCode::PUSH;
-        } else {
+        } else if (item == "POP") {
             opCode = OpCode::POP;
+        } else {
+            opCode = OpCode::PEEK;
         }
         token = new TokenInstr(rg, 0, opCode);
 
