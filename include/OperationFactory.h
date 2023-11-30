@@ -85,9 +85,9 @@ public:
                 break; // You might want to handle the default case
             default:
                 // Return a default operation or throw an exception for unrecognized opcodes
-                return nullptr;
+                throw MemoryException("Invalid Instruction");
         }
-        return nullptr;
+        throw MemoryException("Invalid Instruction");
     }
 };
 
