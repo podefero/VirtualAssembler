@@ -20,7 +20,7 @@ TEST(OPTEST, MOV) {
 
     //Shouldn't be able to move anything into PC
     OperationMove invalid(OpcodeUtil::getOpcode(OpCode::MOV), 16, 1);
-    EXPECT_THROW(invalid.execute(memory), MemoryException);
+    EXPECT_THROW(invalid.validate(memory), MemoryException);
 }
 
 TEST(VMTEST, LoadFile) {
@@ -42,12 +42,12 @@ TEST(VMTEST, InitPC) {
 TEST(VMTEST, Fetch) {
     VirtualMachine vm;
     //can't fetch with no data
-    EXPECT_NO_THROW(vm.fetch());
+    EXPECT_THROW(vm.fetch(), MemoryException);
 }
 
 TEST(VMTEST, Decode) {
     VirtualMachine vm;
-    EXPECT_NO_THROW(vm.decode());
+    EXPECT_THROW(vm.decode(), MemoryException);
 }
 
 TEST(VMTEST, Execute) {
@@ -57,7 +57,7 @@ TEST(VMTEST, Execute) {
 
 TEST(VMTEST, FindTrap0) {
     VirtualMachine vm;
-    EXPECT_NO_THROW(vm.findTrap0());
+    EXPECT_THROW(vm.findTrap0(), MemoryException);
 }
 
 TEST(MEMTEST, LoadFile) {
