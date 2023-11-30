@@ -51,3 +51,5 @@ cd tests
 ## Change Log
 - Added Instructions for P4
 - Have an integration test to test .asm files
+- Fixed move instructions that used RD and RS to use stack
+- Included better error handling in VirtualMachine.cpp
