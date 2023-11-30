@@ -39,30 +39,41 @@ public:
             int memory_size = vm->findTrap0();
             vm->setStackPointers(memory_size);
 
+            // validate opcodes by fetch and decode, the second pass we will
+            // execute.
             while (memory_size > vm->memory.registers.getRegister(Registers::PC)) {
-                if (vm->fetch() != 1) {
-                    std::cerr << "failed to fetch";
-                }
-                if (vm->decode() != 1) {
-                    std::cerr << "failed to decode";
+                try {
+                    vm->fetch();
+                    vm->decode();
+                } catch (const MemoryException &ex) {
+                    vm->memory.registers.dumpRegisters();
+                    std::cerr << "Code Seg Start: " << vm->memory.code_seg_start << std::endl;
+                    std::cerr << "Code Seg End " << vm->memory.code_seg_end << std::endl;
+                    std::cerr << std::endl;
+                    std::cerr << "Data Seg Start " << vm->memory.data_seg_start << std::endl;
+                    std::cerr << "Data Seg End " << vm->memory.data_seg_end << std::endl;
+                    std::cerr << ex.what() << std::endl;
                 }
             }
 
             vm->initPc(); // reset pc
             // execution process. second pass.
             while (memory_size > vm->memory.registers.getRegister(Registers::PC)) {
-                if (vm->fetch() != 1)
-                    std::cerr << "failed to fetch";
-                if (vm->decode() != 1)
-                    std::cerr << "failed to decode";
-                int result = vm->execute();
-                // if (result == 2)
-                //  std::cout << std::endl << "Successful exit" << std::endl;
-                if (result == -1) {
-                    std::cout << "Execute failed " << std::endl;
+                try {
+                    vm->fetch();
+                    vm->decode();
+                    vm->execute();
+                } catch (const MemoryException &ex) {
+                    vm->memory.registers.dumpRegisters();
+                    std::cerr << "Code Seg Start: " << vm->memory.code_seg_start << std::endl;
+                    std::cerr << "Code Seg End " << vm->memory.code_seg_end << std::endl;
+                    std::cerr << std::endl;
+                    std::cerr << "Data Seg Start " << vm->memory.data_seg_start << std::endl;
+                    std::cerr << "Data Seg End " << vm->memory.data_seg_end << std::endl;
+                    std::cerr << ex.what() << std::endl;
                 }
             }
-        } catch (const MemoryException &ex){
+        } catch (const MemoryException &ex) {
             throw MemoryException(ex.what());
         }
 

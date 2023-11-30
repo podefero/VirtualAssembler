@@ -19,11 +19,11 @@ public:
 
     void initPc();
 
-    int fetch();
+    void fetch();
 
-    int decode();
+    void decode();
 
-    int execute();
+    void execute();
 
     unsigned int findTrap0();
 

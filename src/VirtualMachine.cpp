@@ -35,7 +35,7 @@ void VirtualMachine::initPc() {
 }
 
 // fetch an instruction and set the instruction value and upate pc
-int VirtualMachine::fetch() {
+void VirtualMachine::fetch() {
     try {
         int pc = memory.registers.getRegister(Registers::PC);
         if (pc < memory.code_seg_start) {
@@ -50,15 +50,12 @@ int VirtualMachine::fetch() {
             throw MemoryException("PC is after Code Segment");
         }
     } catch (const MemoryException &ex) {
-        memory.registers.dumpRegisters();
-        std::cerr << ex.what() << std::endl;
-        return -1;
+        throw MemoryException(std::string("Fetch error: ") + ex.what());
     }
-    return 1;
 }
 
 // decode instruction to get operation, then validate it
-int VirtualMachine::decode() {
+void VirtualMachine::decode() {
     int pc = memory.registers.getRegister(Registers::PC);
 
     operation = OperationFactory::createOperation(current_instruction.opcode,
@@ -68,29 +65,15 @@ int VirtualMachine::decode() {
         try {
             operation->validate(memory);
         } catch (const MemoryException &ex) {
-            memory.registers.dumpRegisters();
-            std::cerr << "Code Seg Start: " << memory.code_seg_start << std::endl;
-            std::cerr << "Code Seg End " << memory.code_seg_end << std::endl;
-            std::cerr << std::endl;
-            std::cerr << "Data Seg Start " << memory.data_seg_start << std::endl;
-            std::cerr << "Data Seg End " << memory.data_seg_end << std::endl;
-            std::cerr << "Opcode: " << operation->operationAsString();
-            std::cerr << ex.what() << std::endl;
-            return -1;
+            throw MemoryException(ex.what() + std::string(" Opcode: ") + operation->operationAsString());
         }
     } else { // operation is null
-        std::cerr << "Null operation at offset "
-                  << pc - sizeof(Memory::Instruction)
-                  << " Opcode: " << current_instruction.opcode
-                  << " op1: " << current_instruction.operand1
-                  << " op2: " << current_instruction.operand2 << std::endl;
-        return -1;
+        throw MemoryException("Null operation\n" + operation->operationAsString());
     }
-    return 1;
 }
 
 // execute all operations, catch trap execeptions and handle those
-int VirtualMachine::execute() {
+void VirtualMachine::execute() {
     try {
         if (operation) {
             operation->execute(memory);
@@ -99,22 +82,10 @@ int VirtualMachine::execute() {
             std::cerr << "Operation failed " << std::endl;
         }
         delete operation;
-    } catch (const TrapException &ex) {
-        // result from trap 0
-        // exit gracefully
-        return 2;
-    } catch (const MemoryException &ex) {
-        memory.registers.dumpRegisters();
-        std::cerr << "Code Seg Start: " << memory.code_seg_start << std::endl;
-        std::cerr << "Code Seg End " << memory.code_seg_end << std::endl;
-        std::cerr << std::endl;
-        std::cerr << "Data Seg Start " << memory.data_seg_start << std::endl;
-        std::cerr << "Data Seg End " << memory.data_seg_end << std::endl;
-        std::cerr << "Opcode: " << operation->operationAsString();
-        std::cerr << ex.what();
     }
-
-    return 1;
+    catch (const MemoryException &ex) {
+        throw MemoryException(std::string("Execute failed at opcode " + operation->operationAsString()) + ex.what());
+    }
 }
 
 // find trap 0 so we can define the code_segment space
