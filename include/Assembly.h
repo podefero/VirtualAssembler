@@ -51,6 +51,10 @@ private:
     bool done_instruction = false;
     bool found_trap0 = false;
     std::string outputFile;
+
+    static std::string getString(const std::string &line);
+
+    static std::string handleEscapeSequences(const std::string &input);
 };
 
 #endif

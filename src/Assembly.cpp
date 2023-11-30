@@ -136,8 +136,11 @@ Token *Assembly::readToken(std::string &line) {
     std::regex spaceRegex("\\s+");
     std::regex fspaceRegex("^\\s+"); // remove first space in line
     std::regex emptyQuote("'\\s+'");
+    //replace empty space in string literals with \0
+    std::regex emptyStringSpace(R"(\s(?=(?:(?:[^"]*"){2})*[^"]*"[^"]*$))");
 
     line = std::regex_replace(line, commaRegex, " ");
+    line = std::regex_replace(line, emptyStringSpace, "\\0");
     line = std::regex_replace(line, spaceRegex, " ");
     line = std::regex_replace(line, fspaceRegex, "");
     line = std::regex_replace(line, emptyQuote, "'\\0'");
@@ -246,7 +249,9 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
         token = new TokenInt(immediate);
 
     } else if (item == ".STR") {
-        return nullptr;
+        std::string line = getString(arg1);
+        offset += line.length();
+        token = new TokenString(line);
     } else if (item == "ADD") {
 
         // ADD
@@ -550,7 +555,6 @@ int Assembly::getImmediate(const std::string &item) {
             int value = std::stoi(item.substr(2), nullptr, 16);
             return value;
         } else if (item[0] == '\'') {
-
             // check if it's a valid unsigned char
             if (item.length() == 3) {
                 return static_cast<unsigned char>(item[1]);
@@ -574,13 +578,56 @@ int Assembly::getImmediate(const std::string &item) {
             throw PassOneException("getImmediate() failed to get value from item: " +
                                    item);
         }
-
     } catch (const std::out_of_range &e) {
         throw PassOneException("getImmediate() out of range: " + item);
     } catch (const std::invalid_argument &e) {
         throw PassOneException("getImmediate() Invalid argument: " + item);
     }
     return 0;
+}
+
+std::string Assembly::getString(const std::string &line) {
+    if (line.front() == '"' && line.back() == '"') {
+        // If it starts and ends with double quotes
+        // Return the substring without the first and last characters
+        std::string noQuote = line.substr(1, line.size() - 2);
+        return handleEscapeSequences(noQuote);
+    } else {
+        throw PassOneException("Cant validate .STR directive " + line);
+    }
+}
+
+std::string Assembly::handleEscapeSequences(const std::string &input) {
+    std::string result;
+    bool escape = false;
+
+    for (char c: input) {
+        if (escape) {
+            switch (c) {
+                case 'n':
+                    result += '\n';
+                    break;
+                case 't':
+                    result += '\t';
+                    break;
+                case '0':
+                    result += ' ';
+                    break;
+                default:
+                    result += c;
+                    break;
+            }
+
+            escape = false; // Reset escape flag after processing escape sequence
+        } else {
+            if (c == '\\') {
+                escape = true; // Set escape flag when encountering a backslash
+            } else {
+                result += c;
+            }
+        }
+    }
+    return result;
 }
 
 // access value from symbol table

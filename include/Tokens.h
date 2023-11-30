@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 #include "PassTwoException.h"
 #include "Opcodes.h"
@@ -116,6 +117,31 @@ public:
 
 private:
     unsigned char value;
+};
+
+class TokenString : public Token {
+public:
+    explicit TokenString(std::string line) {
+        this->line = std::move(line);
+    }
+
+    void validate(std::map<std::string, unsigned int> &symbol_table,
+                  unsigned int &limit) override {}
+
+    std::vector<unsigned char> getBytes() override {
+        unsigned int getLength = line.length();
+        std::vector<unsigned char> bytes;
+        //push length of string
+        bytes.push_back(getLength);
+        //push each char into byte vector
+        for (int i = 0; i < getLength; ++i) {
+            bytes.push_back(line[i]);
+        }
+        return bytes;
+    }
+
+private:
+    std::string line;
 };
 
 class TokenInt : public Token {
