@@ -71,6 +71,8 @@ public:
                     std::cerr << "Data Seg Start " << vm->memory.data_seg_start << std::endl;
                     std::cerr << "Data Seg End " << vm->memory.data_seg_end << std::endl;
                     std::cerr << ex.what() << std::endl;
+                } catch (const TrapException &ex) {
+
                 }
             }
         } catch (const MemoryException &ex) {
@@ -103,11 +105,57 @@ TEST_F(Integrated, ValidTrap0) {
 }
 
 //AddFunction.asm
-//Call the function twice with different params, outputs the result each time
+//Call add function add(5,3)
 TEST_F(Integrated, AddFunctionASM) {
     asmFile = "../../asm/test/valid/AddFunction.asm";
     binFile = "../../asm/test/valid/AddFunction.bin";
     RunAssembly(false);
     RunVm(false);
 }
+
+//Fib.asm
+//testing recursion
+//Call fib function fib(7)
+TEST_F(Integrated, FibFunctionASM) {
+    asmFile = "../../asm/test/valid/Fib.asm";
+    binFile = "../../asm/test/valid/Fib.bin";
+    RunAssembly(false);
+    RunVm(false);
+}
+
+//BranchingTest.asm
+//needs user input, handle that later on
+//TEST_F(Integrated, BranchASM) {
+//    asmFile = "../../asm/test/valid/BranchingTest.asm";
+//    binFile = "../../asm/test/valid/BranchingTest.bin";
+//    RunAssembly(false);
+//    RunVm(false);
+//}
+
+//HelloWorld.asm
+TEST_F(Integrated, HelloWorldASM) {
+    asmFile = "../../asm/test/valid/HelloWorld.asm";
+    binFile = "../../asm/test/valid/HelloWorld.bin";
+    RunAssembly(false);
+    RunVm(false);
+}
+
+//Proj3_DAGSGADS.asm
+TEST_F(Integrated, DagsGadsASM) {
+    asmFile = "../../asm/test/valid/Project3_DagsGads.asm";
+    binFile = "../../asm/test/valid/Project3_DagsGads.bin";
+    RunAssembly(false);
+    RunVm(false);
+}
+
+//Proj3_OddsEvens.asm
+TEST_F(Integrated, OddsEvens) {
+    asmFile = "../../asm/test/valid/Project3_OddsEvens.asm";
+    binFile = "../../asm/test/valid/Project3_OddsEvens.bin";
+    RunAssembly(false);
+    RunVm(false);
+}
+
+
+
 
