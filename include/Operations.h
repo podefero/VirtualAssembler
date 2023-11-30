@@ -365,7 +365,11 @@ class OperationMove : public Operation {
 public:
     OperationMove(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
-    void validate(Memory &memory) override {}
+    void validate(Memory &memory) override {
+        //cant set pc
+        if (operand1 == 16)
+            throw MemoryException("Can't set PC");
+    }
 
     void execute(Memory &memory) override {
         int rs = memory.registers.getRegister(operand2);
