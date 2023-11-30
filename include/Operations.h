@@ -312,7 +312,7 @@ public:
     OperationLDBI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {
-        isValidDataSeg(memory, getGReg(memory, operand2));
+        //isValidDataSeg(memory, getGReg(memory, operand2));
     }
 
     void execute(Memory &memory) override {
@@ -339,7 +339,7 @@ public:
     OperationLDRI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {
-        isValidDataSeg(memory, getGReg(memory, operand2) + sizeof(int) - 1);
+        //isValidDataSeg(memory, getGReg(memory, operand2) + sizeof(int) - 1);
     }
 
     void execute(Memory &memory) override {
@@ -419,7 +419,7 @@ public:
     OperationSTBI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {};
 
     void validate(Memory &memory) override {
-        isValidDataSeg(memory, getGReg(memory, operand2));
+        //isValidDataSeg(memory, getGReg(memory, operand2));
     }
 
     void execute(Memory &memory) override {
@@ -449,7 +449,7 @@ public:
     OperationSTRI(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
 
     void validate(Memory &memory) override {
-        isValidDataSeg(memory, getGReg(memory, operand2));
+        //isValidDataSeg(memory, getGReg(memory, operand2));
     }
 
     void execute(Memory &memory) override {
@@ -561,6 +561,20 @@ public:
     }
 };
 
+class OperationPEEK : public Operation {
+public:
+    OperationPEEK(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {
+
+    }
+
+    void execute(Memory &memory) override {
+        int sp = getSP(memory) + 4; //looking at value below sp
+        int value = memory.readInt(sp);
+        setGReg(memory, operand1, value);
+    }
+};
 
 class OperationTrap0 : public Operation {
 public:
