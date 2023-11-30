@@ -3,8 +3,9 @@
 ;if(n<=1)
 ;return n
 ;return fib(n-1) + fib(n-2)
+
 ;Instructions
-MAIN MOVI R0 #4 ; param n, count value
+MAIN MOVI R0 #7 ; param n, count value
     ; set return address
     MOV R15 R16 ; store PC
     ADDI R15 #24
@@ -76,6 +77,7 @@ RET POP R5 ; toss Fn1
     MOV R3 R0
     JMP BODY_END ;
 
-END MOV R3 R0
-TRP #1
-TRP #0
+;end result should be a value from fib sequence at the nth element
+END MOV R3 R0 ; move return value to R3
+TRP #1 ; print final return value
+TRP #0 ; end program
