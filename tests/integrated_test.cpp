@@ -156,6 +156,14 @@ TEST_F(Integrated, OddsEvens) {
     RunVm(false);
 }
 
+//StringTest.asm
+TEST_F(Integrated, StringTestASM) {
+    asmFile = "../../asm/test/valid/StringTest.asm";
+    binFile = "../../asm/test/valid/StringTest.bin";
+    RunAssembly(false);
+    RunVm(false);
+}
+
 
 
 

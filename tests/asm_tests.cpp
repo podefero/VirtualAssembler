@@ -476,14 +476,14 @@ TEST(TokenTest, TestSTRDirective) {
     Token *nl = assembly.readToken(line3);
 
     std::string result1 = Assembly::toHex(str->getBytes());
-    std::string expect1 = "0748454c4c4f2020"; //HELLO length 5 at start of line
+    std::string expect1 = "0700000048454c4c4f2020"; //HELLO length 5 at start of line
     EXPECT_EQ(expect1, result1);
 
     std::string result2 = Assembly::toHex(emp->getBytes());
-    std::string expect2 = "022020";
+    std::string expect2 = "020000002020";
     EXPECT_EQ(expect2, result2);
 
     std::string result3 = Assembly::toHex(nl->getBytes());
-    std::string expect3 = "06204e65770a20";
+    std::string expect3 = "06000000204e65770a20";
     EXPECT_EQ(expect3, result3);
 }
