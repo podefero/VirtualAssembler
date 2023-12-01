@@ -129,12 +129,15 @@ public:
                   unsigned int &limit) override {}
 
     std::vector<unsigned char> getBytes() override {
-        unsigned int getLength = line.length();
+        unsigned int value = line.length();
         std::vector<unsigned char> bytes;
         //push length of string
-        bytes.push_back(getLength);
+        bytes.push_back(static_cast<unsigned char>(value & 0xFF));
+        bytes.push_back(static_cast<unsigned char>((value >> 8) & 0xFF));
+        bytes.push_back(static_cast<unsigned char>((value >> 16) & 0xFF));
+        bytes.push_back(static_cast<unsigned char>((value >> 24) & 0xFF));
         //push each char into byte vector
-        for (int i = 0; i < getLength; ++i) {
+        for (int i = 0; i < value; ++i) {
             bytes.push_back(line[i]);
         }
         return bytes;
