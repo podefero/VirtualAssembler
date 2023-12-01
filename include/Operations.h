@@ -650,4 +650,31 @@ public:
     }
 };
 
-#endif  
+class OperationTrap5 : public Operation {
+public:
+    OperationTrap5(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    void execute(Memory &memory) override {
+        //be sure to load a pointer not a value
+        int r3 = getGReg(memory, 3);
+
+        //use offset to move ptr
+        unsigned int offset = r3;
+
+        //get length
+        unsigned int length = memory.readInt(offset);
+
+        //update offset
+        offset += 4;
+
+        for (int i = 0; i < length; ++i) {
+            unsigned char byte = memory.readByte(offset);
+            offset += 1;
+            std::cout << byte;
+        }
+    }
+};
+
+#endif

@@ -81,11 +81,14 @@ public:
                         return new OperationTrap3(opcode, op1, op2);
                     case 4:
                         return new OperationTrap4(opcode, op1, op2);
+                    case 5:
+                        return new OperationTrap5(opcode, op1, op2);
                 }
                 break; // You might want to handle the default case
             default:
                 // Return a default operation or throw an exception for unrecognized opcodes
-                throw MemoryException("Invalid Instruction");
+                throw MemoryException("Invalid Instruction (default case) Opcode : " + std::to_string(opcode) + " " +
+                                      std::to_string(op1) + " " + std::to_string(op2));
         }
         throw MemoryException("Invalid Instruction");
     }
