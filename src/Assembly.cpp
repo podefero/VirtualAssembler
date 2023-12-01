@@ -250,7 +250,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
 
     } else if (item == ".STR") {
         std::string line = getString(arg1);
-        offset += line.length();
+        offset += line.length() + 4;
         token = new TokenString(line);
     } else if (item == "ADD") {
 
