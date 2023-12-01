@@ -533,7 +533,13 @@ int Assembly::getSpecialRegister(const std::string &item) {
             return (registerNumber);
         }
     }
-
+    else if (item == "PC") registerNumber = 16;
+    else if (item == "SL") registerNumber = 17;
+    else if (item == "SB") registerNumber = 18;
+    else if (item == "SP") registerNumber = 19;
+    else if (item == "FP") registerNumber = 20;
+    else if (item == "HP") registerNumber = 21;
+    return registerNumber;
     throw PassOneException("Invalid Special Register value " +
                            std::to_string(registerNumber));
     return -1;
