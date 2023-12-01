@@ -489,7 +489,7 @@ public:
         if (rd == 1 && rs == 1) {
             setGReg(memory, operand1, 1);
         } else {
-            setGReg(memory, operand1, 0);
+            setGReg(memory, operand1, -1);
         }
     }
 };
@@ -506,7 +506,7 @@ public:
         if (rd == 1 || rs == 1) {
             setGReg(memory, operand1, 1);
         } else {
-            setGReg(memory, operand1, 0);
+            setGReg(memory, operand1, -1);
         }
     }
 };
@@ -523,7 +523,7 @@ public:
         if (!(rd == 1 || rs == 1)) {
             setGReg(memory, operand1, 1);
         } else {
-            setGReg(memory, operand1, 0);
+            setGReg(memory, operand1, -1);
         }
     }
 };
