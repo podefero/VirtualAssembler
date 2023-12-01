@@ -28,15 +28,13 @@ cd build
 ```
 
 ```bash 
-#To run assembly portion for P3
-./main_prog ../asm/Project3_OddsEvens.asm
-./main_prog ../asm/Project3_DagsGads.asm
+#To run assembly portion for P4
+./main_prog ../asm/P4.asm
 ```
 
 ```bash
 #To run binary file
-./main_prog ../asm/Project3_OddsEvens.bin
-./main_prog ../asm/Project3_DagsGads.bin
+./main_prog ../asm/P4.bin
 ```
 
 ## Running Tests
@@ -46,10 +44,15 @@ To run the tests, assuming you are in the `build` folder, use the following comm
 ```bash
 cd tests
 ./tests
+
+# Integrated Test automates previous projects and my own tests
+# This will run most files in the ../asm/test/ directory
+./integratedTest
 ```
 
 ## Change Log
 - Added Instructions for P4
-- Have an integration test to test .asm files
+- Have an integration test to test .asm and .bin files
 - Fixed move instructions that used RD and RS to use stack
 - Included better error handling in VirtualMachine.cpp
+- Have support for .STR directive
