@@ -68,7 +68,7 @@ void VirtualMachine::decode() {
             throw MemoryException(ex.what() + std::string(" Opcode: ") + operation->operationAsString());
         }
     } else { // operation is null
-        throw MemoryException("Null operation\n" + operation->operationAsString());
+        throw MemoryException("Null operation\n");
     }
 }
 
