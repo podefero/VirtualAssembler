@@ -49,6 +49,9 @@ cd tests
 # This will run most files in the ../asm/test/ directory
 ./integratedTest
 ```
+## Video
+
+[Watch P4 Video](https://drive.google.com/file/d/1sX9zuns1iu2ooo8W8DUT8klcXbJojYQN/view?usp=sharing)
 
 ## Change Log
 - Added Instructions for P4
