@@ -125,7 +125,7 @@ TEST(LOGICTEST, AndLogic) {
     opFalse.execute(memory); //r1 should be 0
 
     EXPECT_EQ(1, memory.registers.getRegister(0));
-    EXPECT_EQ(0, memory.registers.getRegister(1));
+    EXPECT_EQ(-1, memory.registers.getRegister(1));
 
 }
 
@@ -141,7 +141,7 @@ TEST(LOGICTEST, OrLogic) {
     opFalse.execute(memory); //r1 should be 0
 
     EXPECT_EQ(1, memory.registers.getRegister(0));
-    EXPECT_EQ(0, memory.registers.getRegister(1));
+    EXPECT_EQ(-1, memory.registers.getRegister(1));
 
 }
 
@@ -157,7 +157,7 @@ TEST(LOGICTEST, NotLogic) {
     opFalse.execute(memory); //r1 should be 0
 
     EXPECT_EQ(1, memory.registers.getRegister(0));
-    EXPECT_EQ(0, memory.registers.getRegister(1));
+    EXPECT_EQ(-1, memory.registers.getRegister(1));
 }
 
 TEST(SPTEST, PUSH) {
