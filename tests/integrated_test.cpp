@@ -164,6 +164,13 @@ TEST_F(Integrated, StringTestASM) {
     RunVm(false);
 }
 
+//P4.asm
+TEST_F(Integrated, P4ASM) {
+    asmFile = "../../asm/test/valid/P4.asm";
+    binFile = "../../asm/test/valid/P4.bin";
+    RunAssembly(false);
+    RunVm(false);
+}
 
 
 
