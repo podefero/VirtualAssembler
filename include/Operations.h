@@ -677,4 +677,28 @@ public:
     }
 };
 
+class OperationTrap99 : public Operation {
+public:
+    OperationTrap99(int opcode, int op1, int op2) : Operation(opcode, op1, op2) {}
+
+    void validate(Memory &memory) override {}
+
+    //print out stack
+    void execute(Memory &memory) override {
+        unsigned int sp = getSP(memory);
+        unsigned int sb = getSB(memory) - 4;
+        unsigned int size = (sb - sp) / 4;
+        std::cout << "SP " << sp << std::endl;
+        std::cout << "SB " << sb << std::endl;
+        unsigned address = (size * 4) - 4; //start at address 0
+        while (sp < sb) {
+            sp += 4;
+            int stack_element = memory.readInt(sp);
+            std::cout << address << ": " << stack_element << std::endl;
+            address -= 4;
+        }
+        std::cout << "Size " << size << std::endl;
+    }
+};
+
 #endif

@@ -83,6 +83,8 @@ public:
                         return new OperationTrap4(opcode, op1, op2);
                     case 5:
                         return new OperationTrap5(opcode, op1, op2);
+                    case 99:
+                        return new OperationTrap99(opcode, op1, op2);
                 }
                 break; // You might want to handle the default case
             default:

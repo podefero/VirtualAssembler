@@ -475,7 +475,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
             token = new TokenInstr(immediate, 0, OpCode::TRAP);
         }
             // set token if the trap is a valid arg1
-        else if (immediate > 0 && immediate <= 7)
+        else if ((immediate > 0 && immediate <= 7) || immediate == 99) //99 for debug trap
             token = new TokenInstr(immediate, 0, OpCode::TRAP);
         else
             throw PassOneException("Invalid TRP arg1 " + std::to_string(immediate));
