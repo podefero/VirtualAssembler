@@ -14,11 +14,8 @@ ADDI R15 #24
 JMP MAIN ; call function
 JMP END ; set return address here
 
-FACTORIAL PUSH R15 ; push return address
-    PUSH R14 ; push pfp
-    PUSH R0 ; n
-;IF BASE CASE
-    MOVI R1 #1 ; value to compare
+;BASE Case check first
+FACTORIAL MOVI R1 #1 ; value to compare
     PEEK R0 ; get n
     CMP R0 R1 ; cmp n, 1
     BRZ R0 FACTORIAL_BASE_CASE ; if n == 1 return 1
@@ -45,7 +42,10 @@ FACTORIAL PUSH R15 ; push return address
     PEEK R0 ; get n
     ADDI R0 #-1 ; decrement n
     MOV R15 PC ; set return addres to return
-    ADDI R15 #24
+    ADDI R15 #60
+    PUSH R15 ; push return address
+    PUSH R14 ; push pfp
+    PUSH R0 ; n
     JMP FACTORIAL
 ;RETURN
     ;Assume we have a return value on stack (from base case)
@@ -101,8 +101,12 @@ MAIN PUSH R15 ; push return address
         MOV FP SP ; FP = SP
         LDR R0 n ; pass param n
         MOV R15 PC ; set return address
-        ADDI R15 #24 ; offset
+        ADDI R15 #60 ; offset
+        PUSH R15 ; push return address
+        PUSH R14 ; push PFP
+        PUSH R0 ; Push n
         JMP FACTORIAL
+;Return here from Factorial
         MOV R3 R0 ; get return value
         TRP #1 ; print n, return here from FACTORIAL
         MOVI R3 '\n'
