@@ -92,7 +92,8 @@ public:
                 throw MemoryException("Invalid Instruction (default case) Opcode : " + std::to_string(opcode) + " " +
                                       std::to_string(op1) + " " + std::to_string(op2));
         }
-        throw MemoryException("Invalid Instruction");
+        throw MemoryException("Invalid Instruction (default case) Opcode : " + std::to_string(opcode) + " " +
+                              std::to_string(op1) + " " + std::to_string(op2));
     }
 };
 

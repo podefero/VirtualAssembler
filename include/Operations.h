@@ -81,9 +81,9 @@ public:
 
     }
 
-    static unsigned int getFP() {
+    static unsigned int getFP(Memory &memory) {
         //points at return address of current activation record on the stack
-        return 0;
+        return memory.registers.getRegister(Registers::FP);
     }
 
     //undefined until P5
@@ -119,6 +119,26 @@ public:
 
     [[nodiscard]] std::string operationAsString() const {
         return " " + std::to_string(opcode) + " " + std::to_string(operand1) + " " + std::to_string(operand2) + "\n";
+    }
+
+    static void printStack(Memory &memory) {
+        unsigned int sp = getSP(memory);
+        unsigned int sb = getSB(memory);
+        unsigned int sl = getSL(memory);
+        unsigned int fp = getFP(memory);
+        unsigned int size = (sb - sp) / 4;
+        std::cout << "SP " << sp << std::endl;
+        std::cout << "FP " << fp << std::endl;
+        std::cout << "SL " << sl << std::endl;
+        std::cout << "SB " << sb << std::endl;
+        unsigned address = (sp) + 4; //start at address 0
+        while (sp < sb) {
+            sp += 4;
+            int stack_element = memory.readInt(sp);
+            std::cout << address << ": " << stack_element << std::endl;
+            address += 4;
+        }
+        std::cout << "Size " << size << std::endl;
     }
 
 protected:
@@ -534,7 +554,12 @@ public:
 
     void validate(Memory &memory) override {
         if (getSP(memory) < getSL(memory)) {
-            throw MemoryException("Stack Overflow - Can't push value : " + std::to_string(operand1));
+            printStack(memory);
+            throw MemoryException(
+                    "Stack Overflow - Can't push register: " + std::to_string(operand1) + " Value: " + std::to_string(
+                            getGReg(memory, operand1)) + "\n SP: " + std::to_string(getSP(memory)) + "\n SL: " +
+                    std::to_string(
+                            getSL(memory)));
         }
 
     }
@@ -686,16 +711,20 @@ public:
     //print out stack
     void execute(Memory &memory) override {
         unsigned int sp = getSP(memory);
-        unsigned int sb = getSB(memory) - 4;
+        unsigned int sb = getSB(memory);
+        unsigned int sl = getSL(memory);
+        unsigned int fp = getFP(memory);
         unsigned int size = (sb - sp) / 4;
         std::cout << "SP " << sp << std::endl;
+        std::cout << "FP " << fp << std::endl;
+        std::cout << "SL " << sl << std::endl;
         std::cout << "SB " << sb << std::endl;
-        unsigned address = (size * 4) - 4; //start at address 0
+        unsigned address = (sp) + 4; //start at address 0
         while (sp < sb) {
             sp += 4;
             int stack_element = memory.readInt(sp);
             std::cout << address << ": " << stack_element << std::endl;
-            address -= 4;
+            address += 4;
         }
         std::cout << "Size " << size << std::endl;
     }
