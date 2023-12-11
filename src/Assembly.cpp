@@ -132,7 +132,7 @@ Token *Assembly::readToken(std::string &line) {
     std::vector<std::string> split;
 
     // before spliting remove commas and  extra white space
-    std::regex commaRegex(",");
+    std::regex commaRegex(R"((?![^']*'[^']*),(?![^"]*"[^"]*))");
     std::regex spaceRegex("\\s+");
     std::regex fspaceRegex("^\\s+"); // remove first space in line
     std::regex emptyQuote("'\\s+'");
