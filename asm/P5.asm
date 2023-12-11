@@ -1,6 +1,8 @@
 ;Project 5 Fib
 ;Strings
 COMMA_SPACE .STR ", "
+INPUT_LINE .STR "Fibonacci of "
+IS .STR " is "
 ;Instructions
 JMP MAIN ; go to main
 
@@ -112,14 +114,26 @@ MAIN_WHILE TRP #2 ; read input in R3
     JMP FIB ; jump to function
 ;Return here from FIB
     POP R3 ; pop return val
-    TRP #1 ;
     MOV R14 FP ; get fp
     ADDI R14 #-144 ; ptr fibval
 ;fibval=fib(n)
     STR R3 R14
+    MOV R10 R3 ; save fibval for later
     MOV R14 FP ; i ptr
     MOV R13 FP ; arr ptr
     MOV R12 FP ; n ptr
+    ADDI R12 #-140 ; offste to ptr n
+;cout<< "Fibonacci of " << n << " is " << fibVal << endl;    LDA R3 INPUT_LINE
+    LDA R3 INPUT_LINE
+    TRP #5 ; print line
+    LDR R3 R12 ; get n
+    TRP #1 ; print n
+    LDA R3 IS
+    TRP #5 ; print line
+    MOV R3 R10 ; get fibval
+    TRP #1 ; print fibval
+    MOVI R3 '\n' ; new line
+    TRP #3 ; print new line
     ADDI R14 #-12 ; offset ptr to i
     LDR R0 R14 ; get i
     ADDI R13 #-16 ; offset ptr to array ptr
@@ -127,7 +141,6 @@ MAIN_WHILE TRP #2 ; read input in R3
     MOVI R2 #-4 ; get 4
     MUL R0 R2 ; i * 4. get array offset
     ADD R1 R0 ; array ptr + offset
-    ADDI R12 #-140 ; ptr n
     LDR R4 R12 ; get n
 ;ARR[i] = n
     STR R4 R1 ; store n in array
@@ -137,7 +150,7 @@ MAIN_WHILE TRP #2 ; read input in R3
     STR R0 R14 ; store i
     ADDI R1 #-4 ; move array index to next item
 ;ARR[i] = fibVal
-    STR R3 R1 ; store fibVal
+    STR R10 R1 ; store fibVal
     ADDI R0 #1 ;
     STR R0 R14 ; update i in stack
     MOV R12 FP ; get fp
@@ -160,12 +173,12 @@ MAIN_LOOP MOVI R2 #2 ; get 2
    BRZ R2 END ;
    BGT R2 END ;
 ;cout<< ARR[j] << ", " << ARR[i-j-1]
-    MOVI R2 #4 ; get 4
+    MOVI R2 #-4 ; get 4
     MUL R2 R0 ; 4 * j, get offset
     LDR R4 R13 ; array ptr
     ADD R2 R4 ; offset + array ptr
 ;ARR[j]
-    LDR R3 R4 ; get ARR[j]
+    LDR R3 R2 ; get ARR[j]
     TRP #1 ; print value
     LDA R3 COMMA_SPACE
     TRP #5 ; print comma space
@@ -179,6 +192,22 @@ MAIN_LOOP MOVI R2 #2 ; get 2
 ;ARR[i-j-1]
     LDR R3 R2 ; get ARR[i-j-1]
     TRP #1 ; print value
-    ADDI R0 #1 ; j + 1
+;if(j+1 < i/2)
+    MOV R4 R0 ; move j to R4
+    ADDI R4 #1 ; j + 1
+    CMP R4 R1 ; cmp(j+1 < i/2)
+; if not true then continue
+    BGT R4 CONTINUE
+    BRZ R4 CONTINUE
+; print
+    LDA R3 COMMA_SPACE
+    TRP #5 ; print
+    ADDI R0 #1 ;j + 1
     JMP MAIN_LOOP
+;j++
+CONTINUE ADDI R0 #1 ; j + 1
+    MOVI R3 '\n'
+    TRP #3
+    JMP MAIN_LOOP
+;EXIT PROGRAM
 END TRP #0
