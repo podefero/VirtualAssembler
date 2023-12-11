@@ -28,7 +28,7 @@ cd build
 ```
 
 ```bash 
-#To run assembly portion for P4
+#To run assembly portion for P5
 ./main_prog ../asm/P5.asm
 ```
 
