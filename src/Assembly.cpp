@@ -132,7 +132,7 @@ Token *Assembly::readToken(std::string &line) {
     std::vector<std::string> split;
 
     // before spliting remove commas and  extra white space
-    std::regex commaRegex(",");
+    std::regex commaRegex(R"((?![^']*'[^']*),(?![^"]*"[^"]*))");
     std::regex spaceRegex("\\s+");
     std::regex fspaceRegex("^\\s+"); // remove first space in line
     std::regex emptyQuote("'\\s+'");
@@ -475,7 +475,7 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
             token = new TokenInstr(immediate, 0, OpCode::TRAP);
         }
             // set token if the trap is a valid arg1
-        else if (immediate > 0 && immediate <= 7)
+        else if ((immediate > 0 && immediate <= 7) || immediate == 99) //99 for debug trap
             token = new TokenInstr(immediate, 0, OpCode::TRAP);
         else
             throw PassOneException("Invalid TRP arg1 " + std::to_string(immediate));
@@ -513,7 +513,11 @@ Token *Assembly::createToken(const std::string &item, const std::string &arg1,
 int Assembly::getValidRegister(const std::string &item) {
     int registerNumber = 0;
     if (item[0] == 'R') {
-        registerNumber = std::stoi(item.substr(1));
+        try {
+            registerNumber = std::stoi(item.substr(1));
+        } catch (std::invalid_argument &ex) {
+            throw PassOneException("Register can't parse, using letter instead of number?: " + item);
+        }
         if (registerNumber >= 0 && registerNumber <= 15) {
             return (registerNumber);
         }
@@ -528,12 +532,15 @@ int Assembly::getValidRegister(const std::string &item) {
 int Assembly::getSpecialRegister(const std::string &item) {
     int registerNumber = 0;
     if (item[0] == 'R') {
-        registerNumber = std::stoi(item.substr(1));
+        try {
+            registerNumber = std::stoi(item.substr(1));
+        } catch (std::invalid_argument &ex) {
+            throw PassOneException("Register can't parse, using letter instead of number?: " + item);
+        }
         if (registerNumber >= 0 && registerNumber <= 21) {
             return (registerNumber);
         }
-    }
-    else if (item == "PC") registerNumber = 16;
+    } else if (item == "PC") registerNumber = 16;
     else if (item == "SL") registerNumber = 17;
     else if (item == "SB") registerNumber = 18;
     else if (item == "SP") registerNumber = 19;
@@ -549,16 +556,25 @@ int Assembly::getSpecialRegister(const std::string &item) {
 // support # or 0x
 // support ''
 int Assembly::getImmediate(const std::string &item) {
+    int value;
     try {
         if (item[0] == '#') {
-            int value = std::stoi(item.substr(1));
+            try {
+                value = std::stoi(item.substr(1));
+            } catch (std::invalid_argument &ex) {
+                throw PassOneException("# Immediate can't parse, using letter instead of number?: " + item);
+            }
 
             return value;
         } else if (item[0] == '0' && item[1] == 'x') {
             // could not get this to convert with stoi so manually checking it
             if (item == "0x80000000")
                 return -2147483648;
-            int value = std::stoi(item.substr(2), nullptr, 16);
+            try {
+                value = std::stoi(item.substr(2), nullptr, 16);
+            } catch (std::invalid_argument &ex) {
+                throw PassOneException("0x Immediate can't parse, using letter instead of number?: " + item);
+            }
             return value;
         } else if (item[0] == '\'') {
             // check if it's a valid unsigned char

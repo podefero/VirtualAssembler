@@ -1,4 +1,4 @@
-# Project 4
+# Project 5
 
 ## Build Instructions
 
@@ -29,12 +29,12 @@ cd build
 
 ```bash 
 #To run assembly portion for P4
-./main_prog ../asm/P4.asm
+./main_prog ../asm/P5.asm
 ```
 
 ```bash
 #To run binary file
-./main_prog ../asm/P4.bin
+./main_prog ../asm/P5.bin
 ```
 
 ## Running Tests
@@ -49,10 +49,3 @@ cd tests
 # This will run most files in the ../asm/test/ directory
 ./integratedTest
 ```
-
-## Change Log
-- Added Instructions for P4
-- Have an integration test to test .asm and .bin files
-- Fixed move instructions that used RD and RS to use stack
-- Included better error handling in VirtualMachine.cpp
-- Have support for .STR directive
